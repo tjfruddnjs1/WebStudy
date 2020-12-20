@@ -24,13 +24,22 @@ function removeItem(){
     document.getElementById('li_' + listItemId).style.display = "none";
 }
 
+var donelist = document.getElementById('donelist');
+
+function moveItem(){
+    //this == span
+    var listItemId = this.id.replace('li_','');
+    var listItem = document.getElementById('li_' + listItemId);
+    donelist.appendChild(listItem);
+}
+
 function addNewItem(list, itemText){
     var date = new Date();
     var id = "" + date.getHours() + date.getMinutes() + date.getSeconds() + date.getMilliseconds();
 
     var listItem = document.createElement('li');
     listItem.id = 'li_' + id;
-    listItem.ondblclick = removeItem;
+    listItem.ondblclick = moveItem;
 
     var checkBox = document.createElement('input');
     checkBox.type = 'checkbox';

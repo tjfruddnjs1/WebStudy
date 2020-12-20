@@ -15,3 +15,21 @@ ul li{
         color : #c00;
         font-weight: bold;
 }
+
+#donelist li{
+        border-bottom : 1px dashed #ccc;
+        margin-bottom : 4px;
+        width : 30em;
+        height : 2.5em;
+        padding : 5px 10px;
+}
+
+#donelist li span{
+        font-size: 1.3em;
+        font-weight: 200;
+        padding-left : 10px;
+        vertical-align: middle;
+        cursor : default;
+        text-decoration: line-through;
+        color : red;
+}
