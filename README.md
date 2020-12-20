@@ -18,6 +18,17 @@ max/min | input 필드의 최대값과 최소값 지정
 maxLength | 텍스트 필드에 최대로 입력할 수 있는 문자의 개수 지정
 step | 숫자의 간격 설정, *input이 date, datetime, datetime-local, month, week, time, number, range일 경우만 사용 가능* 
 required | 필수 입력 필드 지정 > 빈칸일 시 넘어가지 않음
+
++ ### font-awesome 
+**https://fontawesome.com/**
+: 사용하고 싶은 아이콘을 가져다 사용 가능
+추가적으로 html 태그에  link 삽입 위의 홈페이지에서 link를 받아서
+
+```html
+<div class="scroll-icon-down">
+  <a href="#"><i class="fas fa-angle-up"></i></a>
+</div>
+```
   
 -------------------------------------------------------
 ## JavaScript
