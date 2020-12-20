@@ -1,6 +1,34 @@
+//number of item
+var totalItems = 0;
+
+function updateItemStatus(){
+    var chId = this.id.replace('cb_','');
+    var itemText = document.getElementById('item_'+ chId);
+
+    if(this.checked){
+        itemText.className = 'checked';
+    }else{
+        itemText.className = '';
+    }
+}
+
 function addNewItem(list, itemText){
+    totalItems++;
+
     var listItem = document.createElement('li');
-    listItem.innerText = itemText;
+    var checkBox = document.createElement('input');
+    checkBox.type = 'checkbox';
+    //checkbox has different id
+    checkBox.id= 'cb_' + totalItems;
+    checkBox.onclick = updateItemStatus;
+
+    var span = document.createElement('span');
+    //span has diffrent id
+    span.id = 'item_' + totalItems;
+    span.innerText = itemText;
+
+    listItem.appendChild(checkBox);
+    listItem.appendChild(span);
     list.appendChild(listItem);
 }
 

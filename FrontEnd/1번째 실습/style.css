@@ -9,3 +9,9 @@ ul li{
         background : #eee;
         padding : 5px 10px;
 }
+
+.checked{
+        text-decoration:line-through;
+        color : #c00;
+        font-weight: bold;
+}

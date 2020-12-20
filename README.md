@@ -133,3 +133,67 @@ inputText.focus();
 
 + ### select()
 : 해당 이벤트 코드 안에 포커스를 잡아주기 위한 함수로 그 영역을 다시 선택해준다.
+
++ ### this
+: 모든 함수는 실행할 때마다 this 객체 추가
+
+**case 1. 객체의 메서드를 호출할 때 this 바인딩**
+: this는 함수를 실행할 때 함수를 소유하고 있는 객체를 참조
+즉, 해당 메서드를 호출한 객체로 바인딩
+```javascript
+var myObject = {
+  name : 'foo';,
+  sayName : function(){
+    console.log(this);
+    console.log(this.name);
+  }
+}
+
+myObject.sayName();
+/* result */
+//Object {name:"foo"}
+//foo
+```
+
+**case 2. 함수를 호출할 때 this 바인딩**
+: 함수를 호출하면, 해당 함수 내부 코드에서 사용된 this는 **전역객체**에 바인딩
+```javascript
+var value = 100;
+
+var MyObject = {
+  value : 1;
+  func1 : function(){
+    this.value += 1;
+    console.log(this.value);
+
+    func2 : function(){
+      this.value += 1;
+      console.log(this.value);
+
+      func3 : function(){
+        this.value += 1;
+        console.log(this.value);
+      }
+
+      func3();
+    }
+    func2();
+  }
+};
+
+myObject.func1();
+```
+
+**case 3. 생성자 함수를 통해 객체를 생성할 때 this 바인딩**
+: 기존 함수에 new 연산자를 붙여서 호출하면 그 함수는 생성자 함수로 동작
+기존의 함수와 차이가 없기 때문에, 생성자 함수 맨 앞은 대문자로 지어 사용하여 혼란을 막는다.
+
+```javascript
+var Person = function(name){
+  console.log(this);
+  this.name = name;
+};
+
+var foo = new Person('foo');
+console.log(foo.name); //foo
+```
