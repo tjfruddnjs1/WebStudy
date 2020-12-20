@@ -104,6 +104,20 @@ function appendNode() {
 
 }
 ```
++ ### oncblclick, onclick
+: 전자는 더블클릭했을 떄의 후자는 클릭했을 때의 이벤트 처리
+
+```javascript
+var listItem = document.createElement('li');
+listItem.id = 'li_' + id;
+listItem.ondblclick = removeItem;
+
+var checkBox = document.createElement('input');
+//checkbox has date id
+checkBox.type = 'checkbox';
+checkBox.onclick = updateItemStatus;
+checkBox.id= 'cb_' + id;
+```
 
 + ### onkeyup()
 : 키를 눌렀다가 땠을 때의 이벤트
@@ -196,4 +210,39 @@ var Person = function(name){
 
 var foo = new Person('foo');
 console.log(foo.name); //foo
+```
+
++ ### String prompt([String message], [String defaultValue])
+- 문자열을 입력할 때 사용
+- 만약 숫자를 입력 받아야하는 경우 문자열로 입력 받은 뒤 변환
+- 첫번째 매개변수는 입력 창에서 띄워줄 메시지
+- 두번째 매개변수는 입력 부분의 기본 값
+
+```html
+<!DOCTYPE html> 
+<html> 
+  <head> 
+    <meta charset="UTF-8"> 
+    <title>prompt</title> 
+    <script type="text/javascript"> 
+      var inputString = prompt('문자열을 입력하세요', '기본 값 문자열'); alert(inputString);
+    </script> 
+  </head> 
+  
+  <body> 
+
+  </body>
+</html>
+```
+
++ ### String.replace('String', 'String2')
+: String에서 String1을 찾아 String2로 바꾼다.
+
++ ### HTML 화면에 보이고 안보이게 하게 하기 위한 이벤트
+*document.getElmentById().style.display = "none"*
+```javascript
+function removeItem(){
+    var listItemId = this.id.replace('li_','');
+    document.getElementById('li_' + listItemId).style.display = "none";
+}
 ```
