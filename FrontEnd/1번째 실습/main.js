@@ -10,19 +10,21 @@ function updateItemStatus(){
 }
 
 function renameItem(){
-    //this == span
+    //this == pencilIcon
     var newText = prompt("What should this item be renamed to?");
     //prevent blank
     if(!newText || newText=="" || newText==" ") return false;
+    var spanId = this.id.replace('pencilIcon_','');
+    var span = document.getElementById('item_'+spanId);
 
-    this.innerText = newText;
+    span.innerText = newText;
 }
 
-function removeItem(){
-    //this == listItem
-    var listItemId = this.id.replace('li_','');
-    document.getElementById('li_' + listItemId).style.display = "none";
-}
+// function removeItem(){
+//     //this == listItem
+//     var listItemId = this.id.replace('li_','');
+//     document.getElementById('li_' + listItemId).style.display = "none";
+// }
 
 var donelist = document.getElementById('donelist');
 
@@ -32,6 +34,8 @@ function moveItem(){
     var listItem = document.getElementById('li_' + listItemId);
     donelist.appendChild(listItem);
 }
+
+
 
 function addNewItem(list, itemText){
     var date = new Date();
@@ -51,10 +55,15 @@ function addNewItem(list, itemText){
     //span has date id
     span.id = 'item_' + id;
     span.innerText = itemText;
-    span.onclick = renameItem;
+
+    var pencilIcon = document.createElement('i');
+    pencilIcon.className = 'fas fa-pencil-alt';
+    pencilIcon.id ='pencilIcon_' + id;
+    pencilIcon.onclick = renameItem;
 
     listItem.appendChild(checkBox);
     listItem.appendChild(span);
+    listItem.appendChild(pencilIcon);
     list.appendChild(listItem);
 }
 
