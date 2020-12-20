@@ -104,3 +104,32 @@ function appendNode() {
 
 }
 ```
+
++ ### onkeyup()
+: 키를 눌렀다가 땠을 때의 이벤트
+
+ex. ENTER 키 눌렀을 때의 동작
+```javascript
+inputText.onkeyup = function(event) {
+    //event.which (13) == ENTER key
+    if(event.which == 13){
+        var itemText = inputText.value;
+        //prevent blank
+        if (!itemText || itemText == "" || itemText == " ") return false;
+        addNewItem(document.getElementById('todolist'), itemText);
+        inputText.focus();
+        inputText.select();
+    }    
+```
+
++ ### focus()
+: 해당 요소에 포커스를 부여 > 텍스트 창의 경우 커서를 위치시켜 바로 입력
+
+ex. inputText 변수에 focus method 부여
+```javascript
+var inputText = document.getElementById('inputText');
+inputText.focus();
+```
+
++ ### select()
+: 해당 이벤트 코드 안에 포커스를 잡아주기 위한 함수로 그 영역을 다시 선택해준다.

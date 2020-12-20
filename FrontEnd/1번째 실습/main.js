@@ -4,13 +4,17 @@ function addNewItem(list, itemText){
     list.appendChild(listItem);
 }
 
-var btnNew = document.getElementById('btnAdd');
+var inputText = document.getElementById('inputText');
+inputText.focus();
 
-btnNew.onclick = function () {
-    var inputText = document.getElementById('inputText');
-    var itemText = inputText.value;
-
-    if (!itemText || itemText == "" || itemText == " ") return false;
-
-    addNewItem(document.getElementById('todolist'), itemText);
+inputText.onkeyup = function(event) {
+    //event.which (13) == ENTER key
+    if(event.which == 13){
+        var itemText = inputText.value;
+        //prevent blank
+        if (!itemText || itemText == "" || itemText == " ") return false;
+        addNewItem(document.getElementById('todolist'), itemText);
+        inputText.focus();
+        inputText.select();
+    }    
 }
