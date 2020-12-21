@@ -35,6 +35,20 @@ function moveItem(){
     donelist.appendChild(listItem);
 }
 
+function mouseover(){
+    //this == li
+    var pencilIconId = this.id.replace('li_','');
+    var pencilIcon = document.getElementById('pencilIcon_'+pencilIconId);
+    pencilIcon.style.visibility = 'visible';
+}
+
+function mouseout(){
+    //this == li
+    var pencilIconId = this.id.replace('li_','');
+    var pencilIcon = document.getElementById('pencilIcon_'+pencilIconId);
+
+    pencilIcon.style.visibility = 'hidden';
+}
 
 
 function addNewItem(list, itemText){
@@ -44,6 +58,8 @@ function addNewItem(list, itemText){
     var listItem = document.createElement('li');
     listItem.id = 'li_' + id;
     listItem.ondblclick = moveItem;
+    listItem.addEventListener('mouseover',mouseover);
+    listItem.addEventListener('mouseout',mouseout);
 
     var checkBox = document.createElement('input');
     checkBox.type = 'checkbox';

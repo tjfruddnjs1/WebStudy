@@ -33,3 +33,9 @@ ul li{
         text-decoration: line-through;
         color : red;
 }
+
+.fa-pencil{
+        float:right;
+        padding:5px;
+        visibility: hidden;
+}

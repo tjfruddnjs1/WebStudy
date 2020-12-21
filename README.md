@@ -257,3 +257,20 @@ function removeItem(){
     document.getElementById('li_' + listItemId).style.display = "none";
 }
 ```
++ ### addEvenListener
+: 특정 이벤트 발생 시 특정 함수를 실행할 수 있게 해주는 기능
+
+**자주 사용하는 이벤트**
+이벤트명 | 설명 
+------- | -------
+change | 변동이 있을 때 발생 
+click | 클릭시 발생 
+focus | 포커스 얻었을 때 발생
+keydown | 키를 눌렀을 때 발생
+load | 로드가 완료 되었을 때 발생
+mousedown | 마우스를 클릭했을 때 발생
+mouseout | 마우스가 특정 객체 밖으로 나갔을 때 발생
+mouseover | 마우스가 특정 객체 위로 올려졌을 때 발생
+mousemove | 마우스가 움직였을 때 발생
+mouseup | 마우스에서 손을 땟을 때 발생
+select | option 태그 등에서 선택 했을 때 발생
