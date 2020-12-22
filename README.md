@@ -1,5 +1,19 @@
 # WebStudy
 
+## 실습 결과물
+
++ ## 첫 번째 실습 : To-do List 구현하기
+- 해당 작업을 입력하고 enter를 치면 차례대로 List가 생성된다.
+- 수행한 작업에 대해서는 더블 클릭을 통해 done list로 옮겨준다.
+- list item에 마우스를 올렸을 때 event를 추가한다.
+- list item을 수정하거나 삭제하는 기능도 추가한다.
+<div>
+<img width="300" src="https://user-images.githubusercontent.com/41010744/102900985-65ee9700-44b0-11eb-958d-0fd4de427f6e.GIF">
+<img width="300" src="https://user-images.githubusercontent.com/41010744/102901093-8a4a7380-44b0-11eb-81b3-857dc3f9d454.GIF">
+<img width="300" src="https://user-images.githubusercontent.com/41010744/102901098-8c143700-44b0-11eb-9096-4bb086ad209b.GIF">
+<img width="300"src="https://user-images.githubusercontent.com/41010744/102901105-8d456400-44b0-11eb-99a9-e2493e5da6ca.GIF">
+</div>
+
 ## HTML
 
 + ### input : form의 요소 중 하나, 사용자가 정보를 입력하는 부분을 만들어야 할 때 사용

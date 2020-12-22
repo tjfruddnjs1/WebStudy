@@ -20,7 +20,7 @@ function renameItem(){
     span.innerText = newText;
 }
 
- function deleteItem(donelist){
+ function deleteItem(){
      //this == listItem
     var listItemId = this.id.replace('minusIcon_','');
     document.getElementById('li_' + listItemId).style.display = "none";
