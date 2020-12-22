@@ -26,13 +26,19 @@ function renameItem(){
 //     document.getElementById('li_' + listItemId).style.display = "none";
 // }
 
+var todolist = document.getElementById('todolist');
 var donelist = document.getElementById('donelist');
 
 function moveItem(){
     //this == span
     var listItemId = this.id.replace('li_','');
     var listItem = document.getElementById('li_' + listItemId);
+    var listItemParentId = listItem.parentElement;
+    if(listItemParentId == donelist){
+        todolist.appendChild(listItem);
+    }else{
     donelist.appendChild(listItem);
+    }
 }
 
 function mouseover(){

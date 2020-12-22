@@ -274,3 +274,6 @@ mouseover | 마우스가 특정 객체 위로 올려졌을 때 발생
 mousemove | 마우스가 움직였을 때 발생
 mouseup | 마우스에서 손을 땟을 때 발생
 select | option 태그 등에서 선택 했을 때 발생
+
++ ### parentElement
+: 특정 element의 부모 element를 가지고 있는 속성
