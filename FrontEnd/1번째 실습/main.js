@@ -20,13 +20,13 @@ function renameItem(){
     span.innerText = newText;
 }
 
-// function removeItem(){
-//     //this == listItem
-//     var listItemId = this.id.replace('li_','');
-//     document.getElementById('li_' + listItemId).style.display = "none";
-// }
+ function deleteItem(donelist){
+     //this == listItem
+    var listItemId = this.id.replace('minusIcon_','');
+    document.getElementById('li_' + listItemId).style.display = "none";
+}
 
-var todolist = document.getElementById('todolist');
+// var todolist = document.getElementById('todolist');
 var donelist = document.getElementById('donelist');
 
 function moveItem(){
@@ -37,7 +37,7 @@ function moveItem(){
     if(listItemParentId == donelist){
         todolist.appendChild(listItem);
     }else{
-    donelist.appendChild(listItem);
+        donelist.appendChild(listItem);
     }
 }
 
@@ -45,15 +45,20 @@ function mouseover(){
     //this == li
     var pencilIconId = this.id.replace('li_','');
     var pencilIcon = document.getElementById('pencilIcon_'+pencilIconId);
+    var minusIcon = document.getElementById('minusIcon_' + pencilIconId);
+
     pencilIcon.style.visibility = 'visible';
+    minusIcon.style.visibility = 'visible';
 }
 
 function mouseout(){
     //this == li
     var pencilIconId = this.id.replace('li_','');
     var pencilIcon = document.getElementById('pencilIcon_'+pencilIconId);
+    var minusIcon = document.getElementById('minusIcon_' + pencilIconId);
 
     pencilIcon.style.visibility = 'hidden';
+    minusIcon.style.visibility = 'hidden';
 }
 
 
@@ -67,12 +72,6 @@ function addNewItem(list, itemText){
     listItem.addEventListener('mouseover',mouseover);
     listItem.addEventListener('mouseout',mouseout);
 
-    var checkBox = document.createElement('input');
-    checkBox.type = 'checkbox';
-    //checkbox has date id
-    checkBox.id= 'cb_' + id;
-    checkBox.onclick = updateItemStatus;
-
     var span = document.createElement('span');
     //span has date id
     span.id = 'item_' + id;
@@ -83,8 +82,13 @@ function addNewItem(list, itemText){
     pencilIcon.id ='pencilIcon_' + id;
     pencilIcon.onclick = renameItem;
 
-    listItem.appendChild(checkBox);
+    var minusIcon = document.createElement('i');
+    minusIcon.className = 'fa fa-minus';
+    minusIcon.id = 'minusIcon_' + id;
+    minusIcon.onclick = deleteItem;
+
     listItem.appendChild(span);
+    listItem.appendChild(minusIcon);
     listItem.appendChild(pencilIcon);
     list.appendChild(listItem);
 }
