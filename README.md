@@ -6,6 +6,13 @@
 
 <img src="https://user-images.githubusercontent.com/41010744/103044624-9d4e6800-45c4-11eb-9ab4-a37a19eb6c81.GIF">
 
+- Storage.js : 데이터베이스와 같은 역할
+- Model.js : CRUD(Create, Read, Update, Delete)역할
+- Controller.js : 사용자의 요청에 의한 모델과 뷰의 연결
+- View.js : Template를 인자로 받아 화면에 데이터를 보여주는 역할 또, controller와 바인딩하여 레코드의 변경을 화면에 바로바로 렌더링
+- Template.js : View가 렌더링할 때 넘겨받는 데이터 인자로 html코드 조각의 일부를 치환하여 원하는 형식으로 입력한 데이터를 출력하는 템플릿 엔진 역할
+- App.js : 각 MVC 역할을 하는 코드들을 모듈화하기 위한
+
 ## 실습 결과물
 
 - ### 첫 번째 실습 : To-do List 구현하기
@@ -367,3 +374,6 @@ var root2 = function () {
 };
 console.log(root2); // function() { return ... }
 ```
+
+- ### test = test || {};
+  : test가 false, undefined, 0, null etc일 때 다음과 같이 표현
