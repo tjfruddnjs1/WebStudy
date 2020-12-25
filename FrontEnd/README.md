@@ -391,3 +391,15 @@ $(window).load(function () {
   $("#win").text("창이 모두 로드됐어요!");
 });
 ```
+
+- ### prototype
+  : 자바스크립트에 클래스는 없지만 함수와 new를 통해 클래스를 흉내낼수 있다. 아래의 예시에서 메모리 할당을 클래스처럼 할당하여 줄이기 위한
+
+```javascript
+function Person() {}
+Person.prototype.eyes = 2;
+Person.prototype.nose = 1;
+var kim  = new Person();
+var park = new Person():
+console.log(kim.eyes); // => 2
+```
