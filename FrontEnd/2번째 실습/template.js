@@ -15,6 +15,7 @@
     exports.app.Template = Template;
 })(this);
 
+//insert method 틀 생성
 Template.prototype.insert = function(date){
     console.log("Temlplate insert method excute");
     var view = "";
