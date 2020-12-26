@@ -403,3 +403,15 @@ var kim  = new Person();
 var park = new Person():
 console.log(kim.eyes); // => 2
 ```
+
+- prototype의 constructor 프로퍼티
+  : 개발자가 특별히 할당하지 않더라도 모든 함수는 "prototype"프로퍼티를 가지는데 기본 프로퍼티인 "prototype"은 constructor 프로퍼티 객체를 생성 > 함수 자신을 가리킨다.
+
+- ### JSON.stringify(value, replacer, space)
+  : JSON 객체를 String 객체로 반환한다.
+
+1. value(필수) : JSON 문자열로 반환할 값 > (배열, 객체, 숫자/문자) 가능
+2. replacer(선택) : 함수/배열 가능 > 이 값이 null이거나 제공되지 않으면 객체의 모든 속성들이 JSON 문자열 결과에 포함
+
+- ### JSON.parse()
+  : String 객체를 JSON 객체로 변환시킨다.
