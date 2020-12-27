@@ -1,4 +1,4 @@
-# WebStudy
+# FrontEnd
 
 ## 실습 과정
 
@@ -449,4 +449,82 @@ console.log(arr1); // [11, 12]
   10번째 인덱스부터 2개의 요소를 삭제하고 'a', 'b', 'c'를 추가했으므로
   11과 12가 삭제되고 이 삭제된 요소들의 배열은 arr1 변수에 담긴다.
 */
+```
+
+# BackEnd(Node.js)
+
+## 교재 : Node.js 교과서
+
+### 알아두어야 할 자바 스크립트
+
+1. const, let, var
+
+- var은 함수 스코프로 if문의 블록과 관계없이 접근 가능
+- const와 let은 블록 스코프이고 둘의 차이는,
+- const는 초기화시 값 할당 필요 & 값 변경 불가, let은 값 변경 가능
+  const와 let을 사용함으로써 **호이스팅 문제 해결 및 코드관리** 하는데 수월 해짐
+  _호이스팅_ : 함수 안에 선언들을 모두 끌어올려서 해당 함수 유효 범위의 최상단에 선언하는 것
+
+ex. 함수 스코프 vs 블록 스코프
+
+```javascript
+if (true) {
+  var x = 3;
+}
+console.log(x); //3
+
+if (ture) {
+  const y = 3;
+  console.log(y); // uncaught referenceError : y is not defined
+}
+```
+
+2. 템플릿 문자열
+
+- 큰/작은 따옴표로 감싸는 기존 문자열과 다르게 백틱(`)으로 감싼다.
+- 특이점은 문자열 안에 변수를 넣을 수 있다.
+- 백틱을 사용하므로 큰/작은 따옴표도 문자열 내에 넣을 수 있다.
+
+ex. 기존 문자열 VS 템플릿 문자열
+
+```javascript
+var string1 = num1 + "더하기" + num2 + "는 '" + result + "'";
+
+const string2 = `${num3} 더하기 ${num4} 는 '${result2}'`;
+```
+
+3. 객체 리터럴
+
+- 객체의 메서드에 함수를 연결할 때 더는 콜론(:)과 function을 붙이지 않아도 된다.
+- 속성명과 변수명이 동일한 경우 한번만 써도 되게 바뀌었다.
+- 객체의 속성명은 동적으로 생성 가능 , 이전에는 객체 리터럴 바깥에서 해야했다.
+
+ex. 이전 VS 현재
+
+```javascript
+var sayNode = function () {
+  console.log("Node");
+};
+var es = "ES";
+var oldObject = {
+  sayJS: function () {
+    console.log("JS");
+  },
+  sayNode: sayNode,
+};
+oldObject[es + 6] = "fantastic";
+oldObject.sayNode(); //Node
+oldObject.sayJS(); //JS
+console.log(oldObject.ES6); //fantasic
+
+const newObject = {
+  sayJS() {
+    console.log("JS");
+  },
+  sayNode,
+  [es + 6]: "fantastic",
+};
+oldObject.sayNode(); //Node
+oldObject.sayJS(); //JS
+console.log(oldObject.ES6); //fantasic
 ```
