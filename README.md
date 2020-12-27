@@ -414,4 +414,8 @@ console.log(kim.eyes); // => 2
 2. replacer(선택) : 함수/배열 가능 > 이 값이 null이거나 제공되지 않으면 객체의 모든 속성들이 JSON 문자열 결과에 포함
 
 - ### JSON.parse()
+
   : String 객체를 JSON 객체로 변환시킨다.
+
+- ### parseInt(string, n)
+  : string을 n진법일 때의 값으로 바꿔준다 > 문자열을 정수로

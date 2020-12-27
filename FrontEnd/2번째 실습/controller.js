@@ -21,39 +21,56 @@ const { func } = require('prop-types');
             self.addItem(title);
         });
 
+        //
+        this.view.bind('itemRemove',function(item){
+            self.removeItem(item.id);
+        });
+
         //initializing
         this.showAll();
     }
+
+    /*
+        Controller의 prototype에 있는 메소드들은 모두 model에 data 조작을 위임하는 method
+        또한, callback 구조를 통해 변경된 data에 대한 정보를 view에 전달하여 rendering 하도록 한다.
+    */
+    Controller.prototype.showAll = function(){
+        console.log('Controller.showAll method execute');
+        var self = this;
+        this.model.read(function(data){
+            self.view.render('showEntries', data);
+        });
+    };
+
+    /*
+        addItem method 역시 model에게 data 변경(추가/삭제)를 요청하고, callback으로 넘어온 값을 view에 전달
+        view, bind 로부터 넘어온 title 값이 비어있는 값인지 확인하는 코드가 추가되었다.
+        this.showAll()은 추가한 다음 바로 list를 출력하기 위한 method
+        self.view.render함수는 아직 수행되지 않았다. model에게 callback function으로 넘어간다
+    */
+    Controller.prototype.addItem = function(title){
+        console.log('Controller.addItem method execute!');
+        var self = this;
+        if(title.trim() == ''){
+            return;
+        }
+        self.model.create(title,function(){
+            self.view.render('clearNewTodo', title);
+        });
+        this.showAll();
+    };
+
+    /*
+        삭제할 데이터에 대한 정보를 view로부터 얻어와 model에게 전달
+        그리고 삭제된 결과를 callback 함수 구조로 view의 render에게 전달
+    */
+    Controller.prototype.removeItem = function(id){
+        var self = this;
+        self.model.remove(id,function(){
+            self.view.render('removeItem', id);
+        });
+    };
+
     exports.app = exports.app || {};
     exports.app.Controller = Controller;
 })(this);
-
-/*
-    Controller의 prototype에 있는 메소드들은 모두 model에 data 조작을 위임하는 method
-    또한, callback 구조를 통해 변경된 data에 대한 정보를 view에 전달하여 rendering 하도록 한다.
-*/
-Controller.prototype.showAll = function(){
-    console.log('Controller.showAll method execute');
-    var self = this;
-    this.model.read(function(data){
-        self.view.render('showEntries', data);
-    });
-};
-
-/*
-    addItem method 역시 model에게 data 변경(추가/삭제)를 요청하고, callback으로 넘어온 값을 view에 전달
-    view, bind 로부터 넘어온 title 값이 비어있는 값인지 확인하는 코드가 추가되었다.
-    this.showAll()은 추가한 다음 바로 list를 출력하기 위한 method
-    self.view.render함수는 아직 수행되지 않았다. model에게 callback function으로 넘어간다
-*/
-Controller.prototype.addItem = function(title){
-    console.log('Controller.addItem method execute!');
-    var self = this;
-    if(title.trim() == ''){
-        return;
-    }
-    self.model.create(title,function(){
-        self.view.render('clearNewTodo', title);
-    });
-    this.showAll();
-};
