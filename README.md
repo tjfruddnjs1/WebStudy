@@ -418,4 +418,35 @@ console.log(kim.eyes); // => 2
   : String 객체를 JSON 객체로 변환시킨다.
 
 - ### parseInt(string, n)
+
   : string을 n진법일 때의 값으로 바꿔준다 > 문자열을 정수로
+
+- ### Array.prototype.slice(start[, end])
+  : start부터 end전까지의 복사본을 새로운 배열 객체로 반환 즉, 원본 배열은 수정되지 않는다.
+
+```javascript
+var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+var arr1 = arr.slice(3, 5); // [4, 5]
+var arr2 = arr.slice(undefined, 5); // [1, 2, 3, 4, 5]
+var arr3 = arr.slice(-3); // [8, 9, 10]
+
+console.log(arr1); // [4, 5]
+console.log(arr2); // [1, 2, 3, 4, 5]
+console.log(arr3); // [8, 9, 10]
+```
+
+- ### Array.prototype.splice(start[, deleteCount[, item1[, item2]]])
+  : 배열의 기존 요소를 삭제 또는 교체하거나 새 요소를 추가하여 배열의 내용을 변경한다 즉, 원본 배열을 수정한다.
+
+```javascript
+var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+var arr1 = arr.splice(10, 2, "a", "b", "c");
+console.log(arr); // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, "a", "b", "c"]
+console.log(arr1); // [11, 12]
+
+/*
+  splice() 함수를 사용하면 원본 배열인 arr이 변경된다.
+  10번째 인덱스부터 2개의 요소를 삭제하고 'a', 'b', 'c'를 추가했으므로
+  11과 12가 삭제되고 이 삭제된 요소들의 배열은 arr1 변수에 담긴다.
+*/
+```
