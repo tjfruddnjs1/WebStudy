@@ -26,6 +26,11 @@ const { func } = require('prop-types');
             self.removeItem(item.id);
         });
 
+        this.view.bind('itemToggle',function(item){
+            console.log('Controller.prototype에서 bind 호출 elementComplete execute!');
+            self.toggleComplete(item.id, item.completed);
+        });
+
         //initializing
         this.showAll();
     }
@@ -68,6 +73,19 @@ const { func } = require('prop-types');
         var self = this;
         self.model.remove(id,function(){
             self.view.render('removeItem', id);
+        });
+    };
+
+    Controller.prototype.toggleComplete = fucntion(id, completed){
+        console.log('Controller.prototype.toggleComplete execute');
+        var self = this;
+        //model에게 변동 사항 전달
+        self.model.update(id, {completed : completed}, fucntion(){
+            //model로부터 변동된 data 전달
+            self.view.render('elementComplete',{
+                id : id,
+                completed : completed
+            });
         });
     };
 

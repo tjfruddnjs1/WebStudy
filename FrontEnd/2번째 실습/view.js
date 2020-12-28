@@ -33,6 +33,21 @@
                     handler({id:self._getItemId(target.parentNode,'li')});
                 }
             });
+        /*
+            list를 삭제할 때와 마찬가지로 bind method를 통해 event 등록
+            event 일어난 곳이 어느 부분인지 판단하기 위한 if문
+            template.js 파일에 추가된 html 코드에 checkbox의 className이 toggle 이므로
+            이 checkbox에서 발생한 이벤트에만 반응하도록 설정
+            handler에게 전달하는 객체는 id와 completed라는 속성 보유
+        */
+        }else if(event == 'itemToggle'){
+            console.log('View.prototype.bind.itemToggle execute!');
+            todo.addEventListener('click', function(event){
+                var target = event.target;
+                if(target.className == 'toggle'){
+                    handler({id : self._getItemId(target), completed:target.checked});
+                }
+            });
         }
     };
 
@@ -55,8 +70,12 @@
             //넘겨받은 parameter에 해당하는 list를 화면상에서 제거하는 method
             removeItem : function(){
                 self._removeItem(parameter);
-            }
+            },
 
+            elementComplete : function(){
+                console.log('View.prototype.render.elementComplete execute!');
+                self._elementComplete(parameter.id, parameter.complted);
+            }
         };
         viewCommands[viewCmd]();
     };
@@ -69,9 +88,14 @@
     //click event가 발생한 list의 id 값을 잡아주는 역할
     View.prototype._getItemId = function(element, tagName){
         var li;
-        if(element.parentNode.tagName.toLowerCase() == tagName.toLowerCase()){
-            li = element.parentNode;
+        if(tagName){
+            if(element.parentNode.tagName.toLowerCase() == tagName.toLowerCase()){
+                li = element.parentNode;
+            }
+        }else{
+            li = element.parentNode.parentNode;
         }
+
         //HTML data-id=*에서 *이 id인 값을 10진수로 parsing
         return parseInt(li.dataset.id , 10);
     };
@@ -81,7 +105,16 @@
         if(elem){
             this.$todoList.removeChild(elem);
         }
-    }
+    };
+
+    View.prototype._elementComplete = function(id, completed){
+        console.log('View.prototype.render._elementComplete execute!');
+        var listItem = document.querySelector('[data-id="'+id+'"]');
+
+        if(listItem){
+            listItem.className = completed ? 'completed' : '';
+        }
+    };
 
     exports.app = exports.app || {};
     exports.app.View = View;

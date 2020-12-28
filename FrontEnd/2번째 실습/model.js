@@ -27,6 +27,12 @@
         this.storage.remove(id, callback);
     };
 
+    Model.prototype.update = function(id, data, callback){
+        //controller로부터 전달받은 변동사항을 storage에게 전달하여 데이터 수정
+        console.log('Model.prototype.update execute!');
+        this.storage.save(data,callback, id);
+    };
+
     exports.app = exports.app || {};
     exports.app.Model = Model;
 })(this);
