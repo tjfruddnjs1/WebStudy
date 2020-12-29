@@ -451,6 +451,179 @@ console.log(arr1); // [11, 12]
 */
 ```
 
+- ### Array.prototype.forEach()
+  : 주어진 함수를 배열 요소 각각에 대해 실행
+
+```javascript
+const array1 = ["a", "b", "c"];
+
+array1.forEach((element) => console.log(element));
+
+// expected output: "a"
+// expected output: "b"
+// expected output: "c"
+```
+
+- ### fucntion.prototype.apply()
+  : 주어진 this값과 배열로 제공되는 arguments로 함수를 호출한다.
+
+```javascript
+const numbers = [5, 6, 2, 3, 7];
+
+const max = Math.max.apply(null, numbers);
+
+console.log(max);
+// expected output: 7
+
+const min = Math.min.apply(null, numbers);
+
+console.log(min);
+// expected output: 2
+```
+
+- ### callback fucntion
+  : 파라미터로 함수를 전달받아 내부에서 실행하는 함수
+
+**콜백함수 (Callback function) 사용 원칙**
+
+1. 익명의 함수 사용
+   : 이름이 없는 '익명의 함수'를 사용 > 함수 내부에서 실행되기 때문에 이름을 붙이지 않아도 된다.
+
+```javascript
+let number = {1,2,3,4,5};
+
+number.forEach(function(x){
+  console.log(x * 2);
+});
+```
+
+2. 함수의 이름(만) 넘기기
+   : 자바스크립트는 null과 undefined 타입을 제외하고 모든 것을 객체로 다룬다. 함수를 변수/다른 함수의 변수처럼 사용할 수 있다. 함수를 콜백함수로 사용할 경우, 함수의 이름만 넘겨주면 된다. 아래의 예제에서 함수를 인자로 사용할 때 callback, finishFunc처럼 ()를 붙일 필요가 없다.
+
+```javascript
+function whatYourName(name, callback){
+  console.log('name :', name);
+  callback();
+}
+
+fucntion finishFunc(){
+  console.log('finish function');
+}
+
+WhatYourName('seol', finishFunc);
+// output : name : seol
+//finsih Function
+```
+
+3. 전역변수, 지역변수 콜백함수의 파라미터로 전달 가능
+
+```javascript
+let fruit = "apple"; //전역 변수
+
+function callbackFunc(callback) {
+  let vegetable = "tomato"; //지역 변수
+  callback(vegetable);
+}
+
+function eat(vegetable) {
+  console.log(`fruit : ${fruit} / vegetable : ${vegetable}`);
+}
+
+callbackFunc(eat);
+
+//output> fruit : apple / vegetatble : tomato
+```
+
+**콜백 함수 주의할 점**
+
+- this를 사용한 콜백 함수
+
+```javascript
+let userData = {
+  signUp: "2020-10-06 15:00:00",
+  id: "minidoo",
+  name: "Not Set",
+  setName: function (firstName, lastName) {
+    this.name = firstName + " " + lastName;
+  },
+};
+
+function getUserName(firstName, lastName, callback) {
+  callback(firstName, lastName);
+}
+
+getUserName("PARK", "MINIDDO", userData.setName);
+
+console.log("1: ", userData.name);
+console.log("2: ", window.name);
+
+/*
+<output>
+1: Not Set
+2: PARK MINIDDO
+*/
+```
+
+첫 번째 콘솔의 값이 PARK MINIDOO 이기를 기대했지만 Not set이 출력되는데 setName() 함수가 실행되기 전의 name 값이 나오는 것인데, 이는 getUserName()이 전역 함수이기 때문이다.
+즉, setName()에서 사용된 this 객체가 window라는 글로벌 객체를 가리킨다.
+따라서 this를 보호할 수 있도록 콜백함수를 만들어야한다.
+
+**해결 방안**
+call()과 apply()를 사용하여 this를 보호할 수 있다.
+
+- call() : 첫번째 인자로 this 객체 사용 나머지 인자들은 ,로 구분
+- apply() : 첫번째 인자로 this 객체 사용 나머지 인자들은 배열 형태로 전달
+
+ex. call()
+
+```javascript
+let userData = {
+    signUp: '2020-10-06 15:00:00',
+    id: 'minidoo',
+    name: 'Not Set',
+    setName: function(firstName, lastName) {
+        this.name = firstName + ' ' + lastName;
+    }
+}
+
+function getUserName(firstName, lastName, callback, obj) {
+    callback.call(obj, firstName, lastName); //	- (1)
+}
+
+getUserName('PARK', 'MINIDDO', userData.setName, userData);	// - (2)
+
+console.log(userData.name);
+
+<output>
+PARK MINIDDO
+```
+
+-(2) 에서 마지막 인자에 담긴 userData는 -(1) 에서 call 함수의 첫번째 인자로 전달된다. 즉, call()에 의해 userData에 this 객체가 매핑된다.
+
+apply()도 인자로 배열로 전달한다는 점만 다르고 동일하게 작동한다.
+
+```javascript
+let userData = {
+    signUp: '2020-10-06 15:00:00',
+    id: 'minidoo',
+    name: 'Not Set',
+    setName: function(firstName, lastName) {
+        this.name = firstName + ' ' + lastName;
+    }
+}
+
+function getUserName(firstName, lastName, callback, obj) {
+    callback.apply(obj, [firstName, lastName]);
+}
+
+getUserName('PARK', 'MINIDDO', userData.setName, userData);
+
+console.log(userData.name);
+
+<output>
+PARK MINIDDO
+```
+
 # BackEnd(Node.js)
 
 ## 교재 : Node.js 교과서
@@ -528,3 +701,331 @@ oldObject.sayNode(); //Node
 oldObject.sayJS(); //JS
 console.log(oldObject.ES6); //fantasic
 ```
+
+4. 화살표 함수
+   : 기존의 function(){}가 아닌 => 을 사용하여 간편하게 사용 가능하다. 화살표는 함수 내부에 return문밖에 없는 경우 return문을 줄일 수 있고 중괄호 대신 add3, add4처럼 return할 식을 바로 적으면 된다.
+
+ex. 같은 기능을 하는 함수의 '=>'사용 예시
+
+```javascript
+function add1(x, y) {
+  return x + y;
+}
+
+const add2 = (x, y) => {
+  return x + y;
+};
+
+const add3 = (x, y) => x + y;
+
+const add4 = (x, y) => x + y;
+
+function not1(x) {
+  return !x;
+}
+
+const not2 = (x) => !x;
+```
+
+ex. 기존 function과 다른점 : this 바인딩
+
+```javascript
+var rel1 = {
+  name: "zero",
+  friends: ["nero", "hero", "xero"],
+  logfriends: function () {
+    var that = this;
+    this.friends.forEach(function (friend) {
+      console.log(that.name, friend);
+    });
+  },
+};
+rel1.logfriends();
+
+const rel2 = {
+  name: "zero",
+  friends: ["nero", "hero", "xero"],
+  logfriends() {
+    this.friends.forEach((friend) => {
+      console.log(this.name, friend);
+    });
+  },
+};
+rel2.logfriends();
+```
+
+5. 구조분해 할당
+   : 객체와 배열로부터 속성이나 요소를 쉽게 꺼낼수 있다.
+
+ex. 기존의 객체 속성에 같은 이름의 변수 대입 코드 VS 변경 후
+
+```javascript
+/*
+  candyMachine 객체 안의 속성을 찾아 변수와 매칭 , count처럼 여러 단계 안의 속성도 찾을 수 있음
+*/
+//이전
+var candyMachine = {
+  status: {
+    name: "node",
+    count: 5,
+  },
+  getCandy: function () {
+    this.status.count--;
+    return this.status.count;
+  },
+};
+var getCandy = candyMachine.getCandy;
+var count = candyMachine.status.count--;
+
+//이후
+const {
+  getCandy,
+  status: { count },
+} = candyMachine;
+```
+
+ex. 배열에 대한 구조분해 할당 분법
+
+```javascript
+var array = ["nodejs", {}, 10, true];
+var node = array[0];
+var obj = array[1];
+var bool = array[3];
+
+const [node, obj, , bool] = array;
+```
+
+6. 클래스
+   : 클래스 문법이 추가되었지만 다른 언어처럼 클래스 기반으로 동작하는 것이 아닌 프로토타입 기반으로 동작 > 프로토타입 기반 문법을 보기 좋게 클래스로 바꾼 것
+
+ex. 프로토타입 상속 예제 코드 vs Class 사용
+
+```javascript
+var Human = function(type){
+  this.type = type || 'human';
+};
+
+Human.isHuman = function(human){
+  return human instanceof Human;
+}
+
+Human.prototype.breathe = function(){
+  alert('h-a-a-m');
+};
+
+var Zero = function(type,firstName, lastName){
+  Human.apply(this, arguments);
+  this.firstName = firstName;
+  this.lastName = lastName;
+};
+
+Zero.prototype = Object.create(Human.prototype);
+Zero.prototype.constructor = Zero; //상속하는 부분
+Zero.prototype.sayName = fucntion(){
+  alert(this.firstName + ' ' + this.lastName);
+};
+var oldZero = new Zero('human','Zero','Cho');
+Human.isHuman(oldZero);
+
+//class 사용하여 상속
+class Human{
+  constructor(type = 'human'){
+    this.type = type;
+  }
+
+  static isHuman(human){
+    return human instanceof Human;
+  }
+
+  breathe(){
+    alert('h-a-a-m');
+  }
+}
+
+class Zero extends Human{
+  constructor(type, firstName, lastName){
+    super(type);
+    this.firstName = firstName;
+    this.lastName = lastName;
+  }
+
+  sayName(){
+    super.breathe();
+    alert(`${this.firstName} ${this.lastName}`);
+  }
+}
+
+const newZero = new Zero('human','Zero','cho');
+Human.isHuman(newZero); //true
+```
+
+7. 프로미스
+   : 자바스크립트와 노드에서는 주로 비동기, 특히 이벤트 리스너를 사용할 때 콜백 함수를 자주 사용 ES2015부터는 자바스크립트와 노드의 API들이 콜백 대신 프로미스 기반으로 재구성되며, 악명 높은 *콜백 지옥(callback hell)*현상을 극복
+   실행은 바로 하되 결괏값은 나중에 받는 객체
+
+_callback hell_ : 비동기 호출이 자주 일어나는 프로그램의 경우 발생하는 현상으로 함수의 매개변수로 넘겨지는 콜백 함수가 반복되어 코드의 들여쓰기 수준이 감당하기 힘들어질 정도로 깊어지는 현상
+
+<br>
+
+_비동기_ : 특정 코드의 실행이 완료될 때까지 기다리지 않고 다음 코드를 먼저 수행하는 자바스크립트의 특성
+프로미스는 주로 서버에서 받아온 데이터를 화면에 표시할 때 사용, 일반적으로 웹 애플리케이션을 구현할 때 서버에서 데이터를 요청하고 받아오기 위해 아래와 같은 API를 사용
+
+```javascript
+$.get("url 주소/products/1", function (response) {
+  ///...
+});
+```
+
+위 API가 실행되면 서버에다가 '데이터 하나를 보내주세요'라는 요청을 보내는데 데이터를 받아오기도 전에 마치 데이터를 다 받아온 것마냥 화면에 데이터를 표시하려고 하면 오류가 발생하거나 빈화면이 뜬다. 이와 같은 문제점을 해결하기 위한 방법 중 하나가 프로미스이다.
+
+**프로미스 코드**
+
+- 규칙 1. 먼저 프로미스 객체를 생성
+- 규칙 2. 기존 callback함수들을 매개변수로 대입
+- 규칙 3. 이렇게 생성한 프로미스 객체에 예제의 then과 catch와 같은 메서드를 붙일 수 있다.
+
+```javascript
+const condition = true; //true면 resoleve, false면 reject
+const promise = new Promise((resolve, reject) => {
+  if(condition){
+    resolve('성공');
+  }else{
+    reject('실패);
+  }
+});
+//다른 코드가 들어갈 수 있음
+promise
+  .then((message) => {
+    console.log(message); //성공(resoleve)한 경우 실행
+  })
+  .catch((error)=>{
+    console.error(error); //실패(reject)한 경우 실행
+  })
+  .finally(()=>{
+    console.log('무조건'); //끝나고 무조건 실행
+  });
+```
+
+**콜백을 프로미스로 변경**
+
+ex. 기존 콜백 > Promise로 변경
+
+```javascript
+function findAndSaveUser(Users) {
+  Users.findOne({}, (err, user) => {
+    //첫 번째 콜백
+    if (err) {
+      return console.error(err);
+    }
+    user.name = "zero";
+    user.save((err) => {
+      //두 번째 콜백
+      if (err) {
+        return console.error(err);
+      }
+      Users.findOne({ gender: "m" }, (err, user) => {
+        //세 번째 콜백
+        //생략
+      });
+    });
+  });
+}
+
+function findAndSaveUser(Users) {
+  Users.findOne({})
+    .then((user) => {
+      user.name = "zero";
+      return user.save();
+    })
+    .then((user) => {
+      return Users.findOne({ gender: "m" });
+    })
+    .then((user) => {
+      //생략
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+}
+```
+
+then 메서드들은 순차적으로 실행되고 콜백에서 매번 따로 처리해야 했던 에로도 마지막 catch에서 한번에 처리 가능하다. 하지만 모든 콜백 함수를 위와 같이 바꿀수 있는 것이 아니라 메서드가 프로미스 방식을 지원하야 합니다.
+
+- Promise.resolve : 즉시 resolve하는 프로미스를 만드는 방법
+- Promise.reject : 즉시 reject하는 프로미스를 만드는 방법
+- Promise.all : 프로미스 여러 개를 한번에 실행
+
+```javascript
+const promise1 = Promise.resolve("성공1");
+const promise2 = Promise.resolve("성공2");
+Promise.all([promise1, promise2])
+  .then((result) => {
+    console.log(result); //성공1 성공2
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+```
+
+8. async/await
+   : 프로미스가 콜백 지옥을 해결했다지만, 여전히 코드가 장황하여 async/await 문법을 사용하여 프로미스를 사용한 코드를 더 깔끔하게 줄입니다.
+
+ex. 프로미스 코드를 async/await을 사용하여 변경
+
+```javascript
+function findAndSaveUser(Users) {
+  Users.findOne({})
+    .then((user) => {
+      user.name = "zero";
+      return user.save();
+    })
+    .then((user) => {
+      return Users.findOne({ gender: "m" });
+    })
+    .then((user) => {
+      //생략
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+}
+
+async function finadAndSaveUser(Users) {
+  let user = await Users.findOne({});
+  user.name = "zero";
+  user = await user.save();
+  user = await Users.findOne({ gender: "m" });
+  //생략
+}
+```
+
+함수 선언부를 일반 함수 대신 async function으로 교체한 후, 프로미스 앞에 await을 붙여 해당 함수는 resolve될 때까지 기다린 후 다음 로직으로 넘어갑니다.
+하지만 에러를 처리하는 부분(프로미스가 reject된 경우)가 없으므로 다음과 같은 추가 작업이 필요합니다.
+
+```javascript
+async function finadAndSaveUser(Users) {
+  try {
+    let user = await Users.findOne({});
+    user.name = "zero";
+    user = await user.save();
+    user = await Users.findOne({ gender: "m" });
+    //생략
+  } catch (error) {
+    console.error(error);
+  }
+}
+```
+
+for문과 async/await을 같이 사용하여 프로미스를 순차적으로 실행할 수도 있습니다.
+
+```javascript
+const promise1 = Promise.resolve("성공1");
+const promise2 = promise.resolve("성공2");
+(async () => {
+  for await (promise of [promise1, promise2]) {
+    console.log(promise);
+  }
+})();
+```
+
+앞으로 중첩되는 콜백 함수가 있다면 프로미스를 거쳐 async/await 문법으로 바꾸는 연습을 하여 코드를 간결하게 하는 습관이 중요
