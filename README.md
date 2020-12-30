@@ -628,7 +628,7 @@ PARK MINIDDO
 
 ## 교재 : Node.js 교과서
 
-### 알아두어야 할 자바 스크립트
+### 2. 알아두어야 할 자바 스크립트
 
 1. const, let, var
 
@@ -1163,3 +1163,86 @@ ex. 데이터 속성의 사용 예시
   ex. data-id > id, data-user-job > userJob
 - 반대로 datset에 데이터를 넣어도 HTML 태그에 반영된다.
 - dataset.monthSalary = 1000;을 넣으면 data-month-salary = "10000" 이라는 속성이 생긴다.
+
+### 3. 노드 기능 알아보기
+
+**REPL(Read Eval Print Loop)** : 입력한 코드를 읽고 해석하고 결과물을 반환하고 종료할 때까지 반복한다 > 컴파일하지 않아도 즉석에서 코드 실행 가능
+
+- 콘솔(터미널) : ctrl + `
+- REPL로 들어가는 명령어 : node
+- JS 파일 실행 : node [자바스크립트 파일 경로]
+
+**노드의 코드 모듈화** : 특정한 기능을 하는 함수/변수의 집합으로 부품화 가능 > 재사용성 > 관리의 용이성
+
+- require 함수 안에 불러올 모듈의 경로를 적습니다. **BackEnd\3. 노드 기능 알아보기\모듈화 실습**에서는 같은 폴더 안에 파일을 만들었지만, 다른 폴더에 있는 파일도 모듈로 사용 가능합니다.
+- 파일 경로내에 js나 json과 같은 확장자는 생략 가능하다.
+- **BackEnd\3. 노드 기능 알아보기\모듈화 실습**의 *func.js*의 module.exports 처럼 다른 모듈(var.js)을 사용하는 파일을 다시 모듈(func.js)해서 module.exports에 모듈화하고자 하는 객체/함수를 만들수도 있습니다.
+  <br>
+  <img width="700" src ="https://user-images.githubusercontent.com/41010744/103329844-0b51ce00-4aa2-11eb-842d-aee967b8cd39.jpg">
+- ES2015가 도입되면서 자바스크립트도 자체 모듈 시스템 문법이 생겼는데 이 문법은 노드의 모듈시스템과 조금 다릅니다.
+  ex. func.js를 ES2015 모듈 스타일로 변경
+
+```javascript
+import { odd, even } from "./var";
+
+function checkOddOrEven(num) {
+  if (num % 2) {
+    // 홀수면
+    return odd;
+  }
+  return even;
+}
+
+export default checkOddOrEven;
+```
+
+- require과 module.exports가 import, export default로 변경
+- 파일 확장자 js > mjs
+
+#### **node 내장 객체**
+
+: 따로 설치하지 않아도 바로 사용가능하며 브라우저의 window 객체와 비슷하다고 생각
+
+##### global : window와 같은 전역 객체로 모든 파일에서 접근 가능하다.
+
+- 전역 객체라는 점을 이용하여 파일 간에 간단한 데이터를 공유할 때 사용하기도 한다.
+
+- ex. **BackEnd\3. 노드 기능 알아보기\노드 내장 객체 알아보기** globalA, globalB
+
+- global 객체의 속성에 값을 대입하여 데이터를 공유할 수 있지만, 남용시 프로그램 규모가 커질수록 어떤 파일에서 global 객체에 값을 대입했는지 찾기 힘들어 유지 보수에 어려움을 겪을 수 있다. _다른 파일의 값을 사용하고 싶다면 모듈 형식으로 만들어 명시적으로 값을 불러와 사용하는 것이 좋다._
+
+##### console :
+
+- global 객체 안에 있으며 브라우저의 console과 유사
+- 보통 debugging을 위해 사용
+- console의 다른 기능들은 **BackEnd\3. 노드 기능 알아보기\노드 내장 객체 알아보기\console.js**
+
+_결과 사진_
+<img src="https://user-images.githubusercontent.com/41010744/103330456-ead74300-4aa4-11eb-80fc-d8a0ab89bdab.png">
+
+- console의 다른 기능 정리
+
+1. console.time(레이블) : console.timeEnd(레이블)과 대응되어 같은 레이블을 가진 time과 timeEnd 사이의 시간을 측정
+2. console.log(내용) : 평범한 로그를 콘솔에 표시
+3. console.error(에러내용) : 에러를 콘솔에 표시
+4. console.table(배열) : 배열의 요소로 객체 리터럴을 넣으며, 객체의 속성들이 테이블 형식으로 표시
+5. console.dig(객체, 옵션) : 객체를 콘솔에 표시할 때 사용한다. 첫번째 인수로 객체를 두번째 인수로 옵션을 넣는데 colors: true 시 콘솔에 색이 추가 depth는 객체 안의 몇단계까지 보여줄지 결정 default : 2
+6. console.trace(레이블) : 에러가 어디서 발생했는지 추적할 수 있게 한다.
+
+##### 타이머 :
+
+_타이머 기능을 제공하는 함수_
+
+- setTimeout(콜백 함수, 밀리초) : 주어진 밀리초 이후에 콜백 함수를 실행합니다.
+- setInterval(콜백 함수, 밀리초) : 주어진 밀리초마다 콜백 함수를 반복 실행합니다.
+- setImmediate(콜백 함수) : 콜백 함수를 즉시 실행
+  _이 타이머 함수들은 모두 아이디를 반환합니다. 아이디를 사용하여 타이머를 취소할 수 있습니다._
+- clearTimeout(아이디) : setTimeout을 취소합니다.
+- clearInterval(아이디) : setInterval을 취소합니다.
+- clearImmediate(아이디) : setImmediate를 취소합니다.
+- ex. **BackEnd\3. 노드 기능 알아보기\노드 내장 객체 알아보기\timer.js**
+  _코드 실행 순서_
+  <br>
+  <img height="400" width="400" src="https://user-images.githubusercontent.com/41010744/103330971-28d56680-4aa7-11eb-8e0b-b05c6dc271f7.png">
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/103331040-61754000-4aa7-11eb-8161-8997dcf94f93.png">
