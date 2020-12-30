@@ -860,8 +860,7 @@ Human.isHuman(newZero); //true
 ```
 
 7. 프로미스
-   : 자바스크립트와 노드에서는 주로 비동기, 특히 이벤트 리스너를 사용할 때 콜백 함수를 자주 사용 ES2015부터는 자바스크립트와 노드의 API들이 콜백 대신 프로미스 기반으로 재구성되며, 악명 높은 *콜백 지옥(callback hell)*현상을 극복
-   실행은 바로 하되 결괏값은 나중에 받는 객체
+   : 자바스크립트와 노드에서는 주로 비동기, 특히 이벤트 리스너를 사용할 때 콜백 함수를 자주 사용 ES2015부터는 자바스크립트와 노드의 API들이 콜백 대신 프로미스 기반으로 재구성되며, 악명 높은 *콜백 지옥(callback hell)*현상을 극복 실행은 바로 하되 결괏값은 나중에 받는 객체
 
 _callback hell_ : 비동기 호출이 자주 일어나는 프로그램의 경우 발생하는 현상으로 함수의 매개변수로 넘겨지는 콜백 함수가 반복되어 코드의 들여쓰기 수준이 감당하기 힘들어질 정도로 깊어지는 현상
 
@@ -894,6 +893,7 @@ const promise = new Promise((resolve, reject) => {
   }
 });
 //다른 코드가 들어갈 수 있음
+
 promise
   .then((message) => {
     console.log(message); //성공(resoleve)한 경우 실행
@@ -1029,3 +1029,137 @@ const promise2 = promise.resolve("성공2");
 ```
 
 앞으로 중첩되는 콜백 함수가 있다면 프로미스를 거쳐 async/await 문법으로 바꾸는 연습을 하여 코드를 간결하게 하는 습관이 중요
+
+### AJAX : axios
+
+- 웹 통신 기능을 제공하는 라이브러리 중 하나
+- jquery와 비교하면, 타입스크립트도 사용이 가능하고 요청 취소도 가능하며 통신 기능만을 전담하므로 가볍다는 것이 장점
+- 약간의 단점은 ES6버전의 자바스크립트 문법을 사용하므로 낮은 버전의 브라우저에서는 고동하지 않을수도 있다.
+
+ex. GET요청 > axios.get 함수의 인수로 요청을 보낼 주소를 넣으면 된다.
+
+```javascript
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+  axios.get('https://www.zerocho.com/api/get')
+    .then((result) => {
+      console.log(result);
+      console.log(result.data); // {}
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+</script>
+```
+
+axios.get 내부에 new Promise가 있기 때문에 then과 catch사용 가능
+result.data에는 서버로부터 보낸 데이터가 들어 있다 이는 개발자 도구 _console_ 탭에서 확인 가능하다.
+
+ex. 위의 promise를 async/await 방식으로 변경
+
+```javascript
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+  (async () => {
+    try {
+      const result = await axios.get('https://www.zerocho.com/api/get');
+      console.log(result);
+      console.log(result.data); // {}
+    } catch (error) {
+      console.error(error);
+    }
+  })();
+</script>
+```
+
+익명 함수이기 때문에 즉시 실행을 위해 코드를 소괄호로 감싸 호출
+
+ex. POST요청 > 데이터를 서버로 전송
+
+```javascript
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+  (async () => {
+    try {
+      const result = await axios.post('https://www.zerocho.com/api/post/json', {
+        name: 'zerocho',
+        birth: 1994,
+      });
+      console.log(result);
+      console.log(result.data);
+    } catch (error) {
+      console.error(error);
+    }
+  })();
+</script>
+```
+
+전체적인 구조는 비슷하지만 두 번째 인수로 데이터를 넣어 보내는 것이 다르다.
+
+### FormData
+
+- HTML form 태그의 데이터를 동적으로 제어할 수 있는 기능 주로 AJAX와 함께 사용
+- 생성 객체의 append 메서드로 key-value 형식의 데이터를 저장 가능
+- has('key') : 주어진 key에 해당하는 값이 있는지 ?
+- get('key') : 주어진 key에 해당하는 value 출력
+- getAll('key') : 주어진 key에 해당하는 모든 value 출력
+- delete('key') : 해당 key 삭제
+- set('key', '수정 value') : 현재 키를 수정
+  formData를 통해 axios를 통해 서버로 전송
+
+### encodeURIComponent, decodeURIComponent
+
+: AJAX 요청을 보낼 때 'http://localhost:4000/search/노드' 처럼 주소에 한글이 들어가는 경우 서버 종류에 따라 한글 주소를 이해하지 못하는 경우가 있는데, 이럴 때 window객체의 메서드인 encodeURIComponent method 사용
+
+ex. 한글 주소부분만 encodeURIComponent method로 감싼다.
+
+```javascript
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+  (async () => {
+    try {
+      const result = await axios.get(`https://www.zerocho.com/api/search/${encodeURIComponent('노드')}`);
+      console.log(result);
+      console.log(result.data); // {}
+    } catch (error) {
+      console.error(error);
+    }
+  })();
+</script>
+```
+
+노드라는 한글 주소가 %EB%85%B8%EB%93%9C 라는 문자열로 변환되는데 받는 쪽에서는 *decodeURIComponent*를 사용하면 된다.
+
+```javascript
+decodeURIComponent("%EB%85%B8%EB%93%9C");
+```
+
+### 데이터 속성과 dataset
+
+- 노드를 사용하는 경우, 클라이언트(프런트엔드)와 빈번하게 데이터를 주고받게되는데 고려해야할 점이 보안이다.
+- 프런트엔드에 민감한 데이터를 내려받는 것은 실수이다.
+- 보안과 무관한 데이터들은 자유롭게 프런트엔드에 보내도 되는데, 자바스크립트 변수에 저장해도 되지만 HTML과 관련 데이터를 저장하는 공식적인 방법이 있는데 그것이 데이터 속성이다.
+
+ex. 데이터 속성의 사용 예시
+
+```javascript
+<ul>
+  <li data-id="1" data-user-job="programmer">Zero</li>
+  <li data-id="2" data-user-job="designer">Nero</li>
+  <li data-id="3" data-user-job="programmer">Hero</li>
+  <li data-id="4" data-user-job="ceo">Kero</li>
+</ul>
+<script>
+  console.log(document.querySelector('li').dataset);
+  // { id: '1', userJob: 'programmer' }
+</script>
+```
+
+- 위와 같이 HTML 태그의 속성으로 data- 로 시작하는 것들을 넣고 이것이 데이터 속성이다.
+- 화면에 나타나진 않지만 웹 애플리케이션 구동에 필요한 데이터이다. 나중에 이 데이터들을 사용해 서버에 요청을 보낸다.
+- 데이터 속성의 장점은 자바스크립트로 쉽게 접근할 수 있다는 점이다.
+- 위의 script 태그를 보면 dataset 속성을 통해 첫 번째 li 태그의 데이터 속성에 접근한다.
+- 단 데이터 속성 이름이 변형되는데 앞의 data- 접두어는 사라지고 - 뒤에 위치한 글자는 대문자가 된다
+  ex. data-id > id, data-user-job > userJob
+- 반대로 datset에 데이터를 넣어도 HTML 태그에 반영된다.
+- dataset.monthSalary = 1000;을 넣으면 data-month-salary = "10000" 이라는 속성이 생긴다.
