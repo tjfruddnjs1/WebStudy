@@ -1,4 +1,4 @@
-# FrontEnd
+# Front-End
 
 ## 실습 과정
 
@@ -624,7 +624,7 @@ console.log(userData.name);
 PARK MINIDDO
 ```
 
-# BackEnd(Node.js)
+# Back-End(Node.js)
 
 ## 교재 : Node.js 교과서
 
@@ -1245,4 +1245,5 @@ _타이머 기능을 제공하는 함수_
   <br>
   <img height="400" width="400" src="https://user-images.githubusercontent.com/41010744/103330971-28d56680-4aa7-11eb-8e0b-b05c6dc271f7.png">
   <br>
+  _실행 결과_
   <img src="https://user-images.githubusercontent.com/41010744/103331040-61754000-4aa7-11eb-8161-8997dcf94f93.png">
