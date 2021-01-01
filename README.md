@@ -1247,3 +1247,93 @@ _타이머 기능을 제공하는 함수_
   <br>
   _실행 결과_
   <img src="https://user-images.githubusercontent.com/41010744/103331040-61754000-4aa7-11eb-8161-8997dcf94f93.png">
+
+#### **filename, **dirname
+
+: 노드에는 파일 사이에 모듈 관계가 있는 경우가 많으므로 때로는 현재 파일의 경로나 파일명을 알아야 하는데, 위의 키워드를 통해 경로에 대한 정보를 제공한다.
+
+ex. **BackEnd\3. 노드 기능 알아보기\노드 내장 객체 알아보기\filename.js**
+
+#### module, exports
+
+: 지금까지 모듈을 만들 때 module.exports를 사용했는데, module 객체 말고 exports 객체로도 묘듈을 만들 수 있습니다. 3.3절의 var.js를 아래와 같이 수정해도 index.js에서는 동일하게 불러올 수 있습니다.
+
+```javascript
+exports.odd = "홀수 입니다";
+exports.even = "짝수 입니다";
+```
+
+module.exports로 한번에 대입하는 대신, 각각의 변수를 exports 객체에 하나씩 넣었습니다. 동일하게 동작하는 이유는 module.exports와 exports가 같은 객체를 참조하기 때문입니다. 실제로 console.log(module.exports == exports) 시 true를 반환합니다.
+
+- exports 객체 사용 시 반드시 객체처럼 속성명과 속성값을 대입해야 합니다.
+- exports 사용할 때 객체만 사용할 수 있으므로 func.js와 같이 module.exports에 함수를 대입한 경우 exports로 변경이 불가능 합니다.
+- exports와 module.exports는 참조 관게에 있으므로 한 모듈에 동시에 사용하지 않는 것이 좋습니다.
+
+#### node에서의 this
+
+```javascript
+console.log(this);
+console.log(this === module.exports);
+console.log(this === exports);
+
+function whatIsThis() {
+  console.log("function", this === exports, this === global);
+}
+whatIsThis();
+/*
+  console :
+  {}
+  true
+  true
+  function false true
+*/
+```
+
+- 노드에 this의 다른 부분은 javascript와 동일하지만 최상이 스코프에 존재하는 this는 module.exports(or exports)를 가리킵니다. 또한, 함수 선언문 내부의 this는 global 객체를 가리킵니다.
+
+#### require
+
+: 모듈을 불러오는 require 함수, 함수는 객체이므로 require는 객체로서 몇가지 속성을 갖고 있습니다. 그중 require.cache와 require.main에 대해 알아보겠습니다.
+
+ex. **BackEnd\3. 노드 기능 알아보기\노드 내장 객체 알아보기\require.js**
+
+- require가 반드시 파일 최상단에 위치할 필요가 없고, module.exports도 최하단에 위치할 필요가 없다. 아무곳에서나 사용 가능
+- require.cache 객체에 require.js나 var.js 같은 파일 이름이 속성명으로 들어가 있는데 속성 값으로는 각 파일의 모듈 객체가 들어 있습니다. 한번 require한 파일은 require.cache에 저장되므로 다음 require할 때 재사용 한다
+- require.cache에는 module.exports했던 부분 + 로딩 여부(loaded) + 부모(parent) + 자식(children) 모듈 관계를 찾을 수 있습니다.
+- require.main에는 노드 실행 시 첫 모듈을 가리킵니다. 예제에서는 require.js가 require.main이 됩니다. 현재 파일이 첫 모듈인지 알아보려면 require.main == module 실행
+- 만약 두 모듈이 서로 require한다면 ? **BackEnd\3. 노드 기능 알아보기\노드 내장 객체 알아보기\dep1,2.js &dep-run.js**
+- 순환 참조(circular dependency) : 먼저 실행되는 dep1.js > dep2.js > dep1.js 다음과 같이 참조 과정이 반복
+
+#### process
+
+: 현재 실행되고 있는 노드 프로세스에 대한 정보를 담고 있다. process 객체 안에는 다양한 속성이 존재
+
+- process.version : 설치된 노드의 버전
+- process.arch : 프로세서 아키텍처 정보, arm, ia32 등의 값일 수 있습니다
+- process.platform : 운영체제 플랫폼 정보, linux나 farwin 등의 값일 수 있습니다
+- process.pid : 현재 프로세스의 아이디
+- process.uptime() : 프로세스가 시작된 후 흐른 시간, 단위는 초입니다
+- process.execPath : 노드의 경로입니다.
+- process.cwd() : 현재 프로세스가 실행되는 위치입니다.
+- process.cpuUsage() : 현재 cpu 사용량입니다.
+  사용 빈도가 높지는 않지만 일반적으로 OS나 실행 환경별로 다른 동작을 하고 싶을 때 사용합니다. process.env, process.nextTick, process.exit()은 중요하니 따로 설명합니다.
+- **process.env** : REPL에 입력시 매우 많은 정보가 출력됩니다. 시스템의 환경 변수를 출력하는데 노드에 직접적인 영향을 미칩니다. 대표적으로 *UV_THREADPOOL_SIZE*와 *NODE_OPTIONS*가 있습니다. 또, 서비스의 중요한 키를 저장하는 공간으로 사용됩니다. ex. 데이터베이스의 비밀번호, 각종 API key
+- NODE_OPTIONS : 노드를 실행할 때의 옵션들을 입력받는 환경 변수
+- UV_THREADPOOL_SIZE : 노드에서 기본적으로 사용하는 스레드 풀의 스레드 갯수를 조절할 수 있게합니다.
+
+```javascript
+const secretId = process.env.SECRET_ID;
+const secretCode = process.env.SECRET_CODE;
+```
+
+- **process.nextTick(콜백)**
+  : 이벤트 루프가 다른 콜백 함수들보다 nextTick의 콜백 함수를 우선으로 처리하도록 만듭니다.
+
+- process.nextTick은 setImmediata, setTimeout보다 먼저 실행됩니다.
+- resolve된 Promise도 nextTick처럼 다른 콜백보다 우선 실행됩니다.
+- 따라서 process.nextTick과 Promise를 마이크로태스크(microtask)로 구분지어 부릅니다.
+
+- **process.exit(코드)**
+  : 실행중인 노드 프로세스를 종료합니다. 서버 환경에서 이 함수를 사용하면 서버가 멈추므로 특수한 경우를 제외하고는 서버에서 잘 사용하지 않습니다. 하지만 서버외의 독립적인 프로그램에서는 수동으로 노드를 멈추기 위해 사용합니다.
+
+- process.exit의 인수를 주지않거나 0을 주면 정상종료, 1을 주면 비정상 종료를 뜻합니다. 만약 에러 발생시 종료하는 경우 1을 넣으면 됩니다.
