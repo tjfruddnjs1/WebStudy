@@ -1337,3 +1337,135 @@ const secretCode = process.env.SECRET_CODE;
   : 실행중인 노드 프로세스를 종료합니다. 서버 환경에서 이 함수를 사용하면 서버가 멈추므로 특수한 경우를 제외하고는 서버에서 잘 사용하지 않습니다. 하지만 서버외의 독립적인 프로그램에서는 수동으로 노드를 멈추기 위해 사용합니다.
 
 - process.exit의 인수를 주지않거나 0을 주면 정상종료, 1을 주면 비정상 종료를 뜻합니다. 만약 에러 발생시 종료하는 경우 1을 넣으면 됩니다.
+
+### 노드 내장 모듈 사용하기
+
+: 노드는 웹 브라우저에서 사용되는 자바스크립트보다 더 많은 기능을 제공합니다. 운영체제 정보에도 접근할 수 있고, 클라이언트가 요청한 주소에 대한 정보도 가져올 수 있습니다.
+
+#### OS
+
+: 웹 브라우저에 사용되는 자바스크립트는 운영체제의 정보를 가져올 수 없지만, 노드는 os 모듈에 정보가 담겨 있어 정보를 가져올 수 있습니다.
+
+ex. **BackEnd\3. 노드 기능 알아보기\노드 내장 모듈 사용하기\os.js**
+
+- os.arch() : process.arch와 동일합니다.
+- os.platform() : process.platform과 동일합니다
+- os.type() : 운영체제의 종류를 보여줍니다.
+- os.uptime() : 운영체제 부팅 이후 흐른 시간(초)를 보여줍니다. process.uptime()은 노드의 실행 시간
+- os.hostname() : 컴퓨터의 이름을 보여줍니다.
+- os.release() : 운영체제의 버전을 보여줍니다.
+- os.homedir() : 홈 디렉터리 경로를 보여줍니다.
+- os.tmpdir() : 임시 파일 저장 경로를 보여줍니다.
+- os.cpus() : 컴퓨터의 코어 정보를 보여줍니다.
+- os.freemem() : 사용 가능한 메모리(RAM)을 보여줍니다.
+- os.totalmem() : 전체 메모리 용량을 보여줍니다.
+  일반적인 웹 서비스를 제작할 때는 사용 빈도가 높지 않지만 운영체제별로 다른 서비스를 제공하고 싶을 때 os 모듈이 유용하다.
+
+#### path
+
+: 폴더와 파일의 경로를 쉽게 조작하도록 도와주는 모듈, 크게 윈도 타입과 POSIX 타입으로 구분되는 POSIX은 유닉스 기반의 운영체제를 의미(mac, linux)
+
+- **윈도 : C:\users\.. 처럼 \으로 구분**
+- POSIX : /home/... 처럼 /으로 구분
+  <br>
+- path.sep : 경로의 구분자입니다. 윈도는 \, POSIX는 /입니다.
+- path.delimiter : 환경 변수의 구분자입니다. process.env.PATH를 입력하면 여러 개의 경로가 이 구분자로 구분되어 있습니다. 윈도는 세미콜론(;)이고, POSIX는 콜론(:)입니다.
+- path.dirname(경로) : 파일이 위치한 폴더 경로를 보여줍니다.
+- path.extname(경로) : 파일의 확장자를 보여줍니다.
+- path.basename(경로, 확장자) : 파일의 이름(확장자 포함)을 표시합니다. 파일의 이름만 표시하고 싶다면 basename의 두 번째 인수로 파일의 확장자를 넣으면 됩니다.
+- path.parse(경로) : 파일 경로를 root, dir, base, ext, name으로 분리합니다.
+- path.format(객체) : path.parse() 한 객체를 파일 경로로 합칩니다.
+- path.normalize(경로) : /나 \를 실수로 여러 번 사용했거나 혼용했을 때 정상적인 경로로 변환합니다.
+- path.isAbsolute(경로) : 파일의 경로가 절대경로인지 상대경로인지를 true, false로 알립니다.
+- path.relative(기준경로, 비교경로) : 경로를 두 개 넣으면 첫 번째 경로에서 두번째 경로로 가는 방법을 알려줍니다.
+- path.join(경로, ...) : 여러 인수를 넣으면 하나의 경로로 합칩니다. 상대경로인 ..(부모 디렉터리)과 .(현 위치)도 알아서 처리합니다.
+- path.resolve(경로, ...) : path.join()과 비슷하지만 차이가 있습니다.
+- **join vs resolve**
+  : /를 만나면 path.resolve는 절대 경로로 인색해서 앞의 경로를 무시하고, path.join은 상대경로로 처리합니다.
+
+```javascript
+path.join("/a", "/b", "c");
+path.resolve("/a", "/b", "c");
+/*
+  결과 : /a/b/c/
+  결과 : /b/c
+*/
+```
+
+**절대 경로와 상대경로**
+: 절대경로는 루트 폴더(윈도의 C:\)나 노드 프로세스가 실행되는 위치가 기준
+상대경로는 현재 파일이 기준이 됩니다. 현재 파일과 같은 경로면 점 하나(.)를 현재 파일보다 한 단계 상위 경로면 점 두개(..)를 사용해 표현합니다.
+
+- ex. C:\users\zerocho\path.js에서 C:\로가고 싶다면 절대경로에서는 C:\를, 상대경로에서는 ..\..을 해야 두 디렉터리 위로 올라가 C:\가 됩니다.
+- 노드는 require.main 파일 기준으로 상대 경로를 인식
+
+**어떤 때 \\를 사용하고 어떤 때 \를 사용?**
+: 기본적으로 \ 하나를 사용해서 표시하지만 C:\node와 같이 \n은 자바스크립트에서 줄바꿈을 뜻하는데 다음과 같이 사용시 의도치 않은 오류 발생할 수 있다. 따라서 이때는 C:\\node처럼 표시해야한다.
+
+- path 모듈은 위와 같은 발생 문제를 알아서 처리하므로 꼭 사용하는 것이 필요
+
+#### url
+
+: 인터넷 주소를 쉽게 조작하도록 도와주는 모듈, url처리에는 크게 두가지
+방식이 있는데 두가지 다 알아두면 좋다
+ex. **BackEnd\3. 노드 기능 알아보기\노드 내장 모듈 사용하기\url.js**
+
+- _노드 버전 7에 추가된 WHATWG 방식의 url :_
+- url 모듈 안에 URL 생성자가 있는데 이 생성자에 주소를 넣어 객체로 만들면 주소가 부분별로 정리됩니다. 이 방식이 WHATWG의 url 입니다. WHATWG에만 있는 username, password, origin, searchParams 속성이 존재합니다.
+  <img src="https://user-images.githubusercontent.com/41010744/103436129-bfe31f80-4c5b-11eb-8808-8421e7d01380.png">
+
+- _예전부터 노드에서 사용하던 방식의 url :_
+  url.parse(주소), url.format(객체) 메서드를 주로 사용
+- url.parse(주소) : 주소를 분해합니다. WHATWG 방식과 비교하면 username, password 대신 auth 속성이 있고, searchParams 대신 query가 있습니다.
+- url.format(객체) : WHATWG 방식 url과 기존 노드의 url을 모두 사용할 수 있습니다. 분해되었던 url 객체를 다시 원래 상태로 조립합니다.
+
+**WHATWG방식의 URL, 기존 방식의 URL**
+<img src="https://user-images.githubusercontent.com/41010744/103436264-efdef280-4c5c-11eb-9d84-7ba2df7bae48.png">
+
+- WHATWG와 노드의 url은 취향에 따라 사용하면 되지만, 노드의 url 형식을 꼭 사용해야 하는 경우가 있습니다. **host 부분 없이 pathname 부분만 오는 주소인 경우**(ex. /book/booklist.apsx)에는 WHATWG 방식이 처리할 수 없습니다.
+
+- WHATWG방식은 search 부분을 **searchParams**라는 특수한 객체로 반환하므로 유용합니다. search 부분은 보통 주소를 통해 데이터를 전달할 때 사용됩니다. search는 물음표(?)로 시작하고, 그 뒤에 **key=value** 형식으로 데이터를 전달합니다. 여러 키가 있을 경우 **&**로 구분합니다.
+  ex. http://www.gilbut.co.kr/?page=3&limit=10&category=bodejs&category=javascript 와 같은 주소에서 ?page=3&limit=10&category=bodejs&category=javascript 부분이 search 입니다.
+
+**searchParams 예시**
+ex. **BackEnd\3. 노드 기능 알아보기\노드 내장 모듈 사용하기\searchParams.js**
+<img src="https://user-images.githubusercontent.com/41010744/103436475-fff7d180-4c5e-11eb-9afd-633dfeae85c2.png">
+
+- getAll(키) : 키에 해당하는 모든 값들을 가져옵니다. category키에는 nodejs와 javascript라는 두 가지 값이 들어 있습니다.
+- get(키) : 키에 해당하는 첫 번째 값만 가져옵니다.
+- has(키) : 해당 키가 있는지 없는지를 검사합니다.
+- keys() : searchParams의 모든 키를 반복기(iterator)객체로 가져옵니다.
+- values() : searchParams의 모든 값을 반복기 객체로 가져옵니다.
+- append(키, 값) : 해당 키를 추가합니다. 같은 키의 값이 있다면 유지하고 하나 더 추가합니다.
+- set(키, 값) : append와 비슷하지만, 같은 키의 값들을 모두 지우고 새로 추가합니다.
+- delete(키) : 해당 키를 제거합니다.
+- toString() : 조작한 searchParams 객체를 다시 문자열로 만듭니다. 이 문자열을 search에 대입하면 주소 객체에 반영됩니다.
+
+query같은 문자열보다 searchParams가 유용한 이유는 query의 경우 다음에 배우는 queryString 모듈을 한 번 더 사용해야 하기 때문입니다.
+
+#### querystring
+
+: WHATWG 방식의 url 대신 기존 노드의 url을 사용할 때, search 부분을 사용하기 쉽게 객체로 만드는 모듈입니다. \*_querystring 예시_
+
+ex. **BackEnd\3. 노드 기능 알아보기\노드 내장 모듈 사용하기\querystring.js**
+<img src="https://user-images.githubusercontent.com/41010744/103436632-2f0f4280-4c61-11eb-9cda-4fe1711a145c.png">
+
+- querystring.parse(쿼리) : url의 query 부분을 자바스크립트 객체로 분해합니다.
+- querystring.stringify(객체) : 분해된 query 객체를 문자열로 다시 조립합니다.
+
+#### crypto
+
+: 다양한 방식의 암호화를 도와주는 모듈입니다. 몇 가지 메서드를 익혀두면 실제 서비스에도 적용할 수 있어 정말 유용합니다. ex. 고객의 비밀번호를 암호화
+
+1. 단방향 암호화 :
+
+- 보통 비밀번호를 암호화
+- 복호화(암호화된 문자열을 원래 문자열로 되돌려 놓는 것)할 수 없는 암호화 방식
+- 한 번 암호화하면 원래 문자열을 찾을 수 없습니다.
+- 해시 기법 : 어떠한 문자열을 고정된 길이의 다른 문자열로 바꿔버리는 방식
+
+ex. **BackEnd\3. 노드 기능 알아보기\노드 내장 모듈 사용하기\hash.js**
+
+- createHash(알고리즘) : 사용할 해시 알고리즘을 넣는다. md5, sha1, sha256, sha512등이 가능하지만, md5와 sha1은 취약점이 발견되어 현재는 sha512정도로 충분하다
+- update(문자열) : 변환할 문자열을 넣는다.
+- digest(인코딩) : 인코딩할 알고리즘을 넣습니다. base64, hex, latin1이 주로 사용되는데, 그중 base64가 결과 문자열이 가장 짧아 애용됩니다. 결과물로 변환된 문자열을 반환합니다.
