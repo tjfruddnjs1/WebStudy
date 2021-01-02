@@ -1521,3 +1521,22 @@ ex. **BackEnd\3. 노드 기능 알아보기\노드 내장 모듈 사용하기\wo
 
 - 여러개의 워커 스레드에 데이터 넘기기 > postMessage X
   ex. **BackEnd\3. 노드 기능 알아보기\노드 내장 모듈 사용하기\worker_data.js**
+
+1. new Worker를 호출할 때 두 번째 인수의 workerData 속성으로 원하는 데이터를 보낸다.
+2. 워커에서는 workerData로 부모로부터 데이터를 받습니다.
+3. 현재 두 개의 워커가 돌아고 있으며, 각각 부모로부터 숫자를 받아 100을 더해 돌려줍니다.
+4. 돌려주는 순간 워커가 종료되어 worker.on('exit')이 실행
+5. 워커 두 개가 모두 종료되면 job done이 logging
+
+- 실전적인 예제로 소수의 개수를 구하는 작업
+  ex. **BackEnd\3. 노드 기능 알아보기\노드 내장 모듈 사용하기\prime.js**
+  <img src="https://user-images.githubusercontent.com/41010744/103459769-bab5cb80-4d54-11eb-850e-7a2576a6bd62.png">
+
+- 상당한 시간이 소요 > 워커 스레드를 사용하여 여러 개의 스레드들이 문제를 나눠서 해결
+
+ex. **BackEnd\3. 노드 기능 알아보기\노드 내장 모듈 사용하기\prime-worker.js**
+
+<img src="https://user-images.githubusercontent.com/41010744/103459996-3f551980-4d56-11eb-9d2a-193084f27678.png">
+
+- 8개의 스레드로 나누어 작업
+- 스레드를 생성하고 스레드 사이에 통신하는데 상당한 비용이 발생하므로, 이점을 고려해서 멀티 스레딩을 해야 한다 잘못하면 멀티 스레딩을 할 때 싱글 스레딩보다 더 느려지는 현상이 발생할 수 있다.
