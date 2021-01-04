@@ -1595,6 +1595,7 @@ ex. **BackEnd\3. 노드 기능 알아보기\파일 시스템 접근하기\writeF
 - 하지만 몇몇 메서드는 동기 방식으로도 사용할 수 있다. 특히 fs 모듈이 그러한 메서드를 많이 가지고 있음
   <br>
   ex. **BackEnd\3. 노드 기능 알아보기\파일 시스템 접근하기\async.js**
+  <br>
   <img src="https://user-images.githubusercontent.com/41010744/103490507-9a266800-4e5f-11eb-844b-90ec28024e62.png">
   <br>
 
