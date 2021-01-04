@@ -1593,10 +1593,10 @@ ex. **BackEnd\3. 노드 기능 알아보기\파일 시스템 접근하기\writeF
 
 - setTimeout같은 타이머와 process.nextTick 외에도, 노드는 대부분의 메서드를 비동기 방식으로 처리
 - 하지만 몇몇 메서드는 동기 방식으로도 사용할 수 있다. 특히 fs 모듈이 그러한 메서드를 많이 가지고 있음
-
-ex. **BackEnd\3. 노드 기능 알아보기\파일 시스템 접근하기\async.js**
-<img src="https://user-images.githubusercontent.com/41010744/103490507-9a266800-4e5f-11eb-844b-90ec28024e62.png">
-<br>
+  <br>
+  ex. **BackEnd\3. 노드 기능 알아보기\파일 시스템 접근하기\async.js**
+  <img src="https://user-images.githubusercontent.com/41010744/103490507-9a266800-4e5f-11eb-844b-90ec28024e62.png">
+  <br>
 
 - 비동기 메서드들은 백그라운드에 해당 파일을 읽으라고만 요청하고 다음 작업으로 넘어갑니다.
 - 따라서 파일 읽기 요청만 3번 보내고 console.log("끝")을 찍습니다.
