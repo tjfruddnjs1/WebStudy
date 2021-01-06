@@ -1937,3 +1937,206 @@ ex. **BackEnd\4. http 모듈로 서버 만들기\REST와 라우팅 사용하기\
 - Request Payload : 요청의 본문
 - Priview & Response : 응답의 본문
 - JSON의 경우 Preview 탭에서 더 깔끔하게 확인 가능
+
+#### 쿠키와 세션 이해하기
+
+- 클라이언트에서 보내는 요청의 한 가지 단점 : 누가 요청을 보내는지 모른다
+- 물론 요청을 보내는 IP주소나 브라우저의 정보를 받아올수 있지만 여러 컴퓨터가 공통으로 IP주소를 가지거나, 한 컴퓨터를 여러 사람이 사용할 수도 있다
+- 해결책 : 로그인 > 쿠키와 세션
+
+ex. **BackEnd\4. http 모듈로 서버 만들기\쿠키와 세션이해하기\cookie.js**
+
+- 쿠키는 _name=zerocho;year=1994_ 처럼 문자열 형식으로 존재, 쿠키 간에는 세미콜론으로 구분
+- createServer 메서드의 콜백에서는 req 객체에 담겨있는 쿠키를 가져옵니다. 쿠키는 req.headers.cookie에 들어 있습니다.
+- req.headers는 요청의 헤더를 의미합니다. 쿠키는 요청과 응답의 헤더를 통해 주고 받는다
+- 응답의 헤더에 쿠키를 기록해야 하므로 res.writeHead 메서드를 사용
+- Set-Cookie는 브라우저한테 다음과 같은 값의 쿠키를 저장하라는 의미
+  <br>
+  <img scr="https://user-images.githubusercontent.com/41010744/103722228-d5b56380-5012-11eb-82d0-5192493eefa7.png">
+  <br>
+
+- 한개의 요청을 보냈는데 두개가 기록(/,/fabicon.ico)
+- **파비콘** : 웹 사이트 탭에 보이는 이미지
+  <br>
+  <img scr="https://user-images.githubusercontent.com/41010744/103722325-0ac1b600-5013-11eb-8260-61a3fc6f9a21.png">
+  <br>
+
+- 브라우저는 파비콘이 뭔지 HTML에서 유추할 수 없으면 서버에 파비콘 정보에 대한 요청을 보냅니다.
+- 따라서, 첫번째 요청에서는 쿠키 정보를 가지고 있지않으므로 쿠키정보를 출력하지 않고 두번째 파비콘 요청의 헤더에 쿠키가 존재함을 확인 가능
+
+ex. **BackEnd\4. http 모듈로 서버 만들기\쿠키와 세션이해하기\cookie2.js & cookie2.html**
+
+- 주소가 /login과 /로 시작하는 것까지 두개이므로 주소별로 분기처리
+
+1.  cookie2.js 분석
+
+```javascript
+const parseCookies = (cookie = "") =>
+  cookie
+    .split(";")
+    .map((v) => v.split("="))
+    .reduce((acc, [k, v]) => {
+      acc[k.trim()] = decodeURIComponent(v);
+      return acc;
+    }, {});
+```
+
+- 쿠키는 문자열이기 때문이 이를 쉽게 사용하기 위해 자바스크립트 객체 형식으로 바꾸는 함수
+
+##### Array.prototype.map()
+
+: 배열 내의 모든 요소 각각에 대하여 주어진 함수를 호출한 결과를 모아 새로운 배열을 반환
+
+```javascript
+const array1 = [1, 4, 9, 16];
+
+// pass a function to map
+const map1 = array1.map((x) => x * 2);
+
+console.log(map1);
+// expected output: Array [2, 8, 18, 32]
+```
+
+##### Array.prototype.reduce()
+
+: 배열의 각 요소에 대해 주어진 리듀서(reducer) 함수를 실행하고, 하나의 결과값을 반환
+
+```javascript
+const array1 = [1, 2, 3, 4];
+const reducer = (accumulator, currentValue) => accumulator + currentValue;
+
+// 1 + 2 + 3 + 4
+console.log(array1.reduce(reducer));
+// expected output: 10
+
+// 두번째 인수는 초기 값
+// 5 + 1 + 2 + 3 + 4
+console.log(array1.reduce(reducer, 5));
+// expected output: 15
+```
+
+2. cookie2.js 분석
+
+```javascript
+ // 주소가 /login으로 시작하는 경우
+  if (req.url.startsWith('/login')) {
+    const { query } = url.parse(req.url);
+    const { name } = qs.parse(query);
+    const expires = new Date();
+    // 쿠키 유효 시간을 현재시간 + 5분으로 설정
+    expires.setMinutes(expires.getMinutes() + 5);
+    res.writeHead(302, {
+      Location: '/',
+      'Set-Cookie': `name=${encodeURIComponent(name)}; Expires=${expires.toGMTString()}; HttpOnly; Path=/`,
+    });
+    res.end();
+```
+
+- 주소가 /login으로 시작할 경우 url과 querystring 모듈로 각각 주소와 주소에 딸려오는 query를 분석
+- 쿠키 만료시간을 지금으로부터 5분뒤로 설정
+- 302 응답 코드, 리다이렉트 주소와 함께 쿠키를 헤더에 넣는다
+- 헤더에는 한글을 설정할 수없으므로 name 변수를 encodeURIComponent 메서드로 인코딩
+- 또, Set-Cookie의 값으로는 제한된 ASCII코드만 들어가야 하므로 줄바꿈 X
+
+3. cookie2.js 분석
+
+```javascript
+// name이라는 쿠키가 있는 경우
+  } else if (cookies.name) {
+    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end(`${cookies.name}님 안녕하세요`);
+  } else {
+    try {
+      const data = await fs.readFile('./cookie2.html');
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(data);
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end(err.message);
+    }
+  }
+```
+
+- 그 외의 경우(/로 접속했을 때 등), 먼저 쿠키가 있는지 확인 후 쿠키가 없다면 로그인할 수 있는 페이지로 보낸다
+- 처음 방문한 경우 쿠키가 없으므로 cookie2.html로 전송
+- 쿠키가 있다면 로그인된 상태로 간주하여 인사말 출력
+
+##### Set-Cookie 쿠키 설정
+
+- 만료 시간(Expires), HttpOnly, Path 옵션 부여
+- 쿠키 설정할 때 각종 옵션 가능 > 옵션 사이 세미콜론(;)을 써서 구분
+- 쿠키에 한글과 줄바꿈은 불가 > 한글은 encodeURIComponent로 감싸서 넣는다
+- 쿠키명=쿠키값 : 기본적인 쿠키의 값입니다. ex. mycookie=test, name=zerocho 와 같이 설정
+- Expires=날짜 : 만료기한 > 이 기한이 지나면 쿠키제거, 기본 값은 클라이언트가 종료될때까지
+- Max-age=초 : Expires와 비슷하지만 날짜 대신 초를 입력할 수 있습니다. 해당 초가 지나면 쿠키가 제거됩니다. Expires보다 우선합니다.
+- Domain=도메인명 : 쿠키가 전송될 도메인을 특정할 수 있습니다. 기본값은 현재 도메인
+- Path=URL : 쿠키가 전송될 URL을 특정할 수 있습니다. 기본값은'/'이고, 이 경우 모든 URL에서 쿠키 전송 가능
+- Secure : HTTPS 일 경우에만 쿠키가 전송
+- HttpOnly : 설정시 자바스크립트에서 쿠키에 접근할 수 없습니다. 쿠키 조작을 방지하기 위해 설정하는 것이 좋습니다.
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/103731282-1cfa1f00-5028-11eb-86fb-b755c8d84ec4.png">
+  <br>
+
+- 새로고침을 해도 로그인 유지
+- but, 쿠키가 노출되어 쿠키가 조작될 위험이 있다 따라서 민감한 개인정보를 쿠키에 넣어두는 것은 적절하지 못하다
+
+ex. **BackEnd\4. http 모듈로 서버 만들기\쿠키와 세션이해하기\session.js.js**
+
+- cookie2.js와 달리 쿠키에 이름을 담아서 보내는 대신, uniqueInt라는 숫자 값을 보냈습니다.
+- 사용자의 이름과 만료 시간은 uniqueInt 속성명 아래에 있는 session이라는 객체에 대신 저장
+- cookie.session이 있고 만료 기한을 넘기지 않았다면 session 변수에서 사용자 정보를 가져와 사용
+- 서버에 사용자 정보를 저장하고 클라이언트와는 세션 아이디로만 소통
+- 하지만 실제로는 세션을 위와 같이 변수에 저장하지 않는다. 서버가 멈추거나 재시작되면 메모리에 저장된 변수가 초기화되기 때문인데 보통은 레디스(Redis), 멤캐시드(Memcached)같은 DB에 넣는다
+
+#### https와 http2
+
+- https 모듈은 웹 서버에 SSL 암호화를 추가 , GET이나 POST요청을 할 때 오가는 데이터를 암호화해서 중간에 다른사람이 요청을 가로채더라도 내용을 확인 X
+- 요즘은 로그인이나 결제가 필요한 창에서 https 적용이 필수
+- SSL이 적용된 웹 사이트에 방문하면 아래와 같이 브라우저 주소창에 자물쇠 표시
+  <br>
+  <img scr="https://user-images.githubusercontent.com/41010744/103731857-82024480-5029-11eb-8a6d-05a18c6e516b.png">
+  <br>
+
+ex. **BackEnd\4. http 모듈로 서버 만들기\https와 http2\server1.js**
+
+- 이서버에 암호를 적용하려면 https 모듈을 사용해야 합니다. 하지만 https는 아무나 사용할수 있는 것이 아닌 인증해줄수있는 기관이 필요한데 인증서는 인증 기관에서 구입해야 하며, Let's Encrypt 같은 기관에서 무료로 발급해주기도 한다.
+- 인증서 발급 과정은 복잡하고 도메인도 필요하므로 인증서 발급 방법은 책에서 소개하지 않고 발급 받은 인증서가 있다면 **BackEnd\4. http 모듈로 서버 만들기\https와 http2\server1-3.js** 처럼하면 된다.
+- 다른 것은 거의 비슷하지만 createServer 메서드가 인수를 두개 받습니다. 두 번째 인수는 http 모듈과 같이 서버 로직이고, 첫 번째 인수는 인증서에 관련된 옵션 객체
+- 인증서를 구입하면 pem이나 crt, 또는 key확장자를 가진 파일들을 제공합니다. 파일들을 fs.readFileSync 메서드로 읽어서 cert, key, ca 옵션에 알맞게 넣으면 됩니다.
+- 실제 서버에서는 80포트 대신 443 포트를 사용하면 됩니다.
+
+ex. **BackEnd\4. http 모듈로 서버 만들기\https와 http2\server1-4.js**
+
+- 노드의 http2 모듈은 SSL 암호화와 더불어 최신 HTTP 프로토콜인 http/2를 사용할 수 있게 합니다. http/2는 요청, 응답 방식이 기존 http/1.1 보다 개선되어 훨씬 효율적으로 요청 > 웹의 속도 개선
+- 실제로 http/1.1도 파이프라인이라는 기술을 적용하므로 큰 차이는 없지만 http/2가 훨씬 효율적
+- https 모듈과 유사하지만 https 모듈을 http2로, createServer 메서드를 createSecureServer 메서드로 변경
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/103732546-f5588600-502a-11eb-81d2-d17bef407ec7.png">
+  <br>
+
+#### cluster
+
+- 기본적으로 싱글 프로세스로 동작하는 노드가 CPU 코어를 모두 사용할 수 있게 해주는 모듈
+- 포트를 공유하는 노드 프로세스를 여러 개 둘수도 있으므로, 요청이 많이 들어왔을 때 병렬로 실행된 서버의 개수만큼 요청이 분산되게 할 수 있습니다. > 서버에 무리 ↓
+- 예를들어, 코어가 8개인 서버가 있을때 노드는 보통 코어를 하나만 활용하는데 cluster 모듈을 통해 코어 하나당 노드 프로세스가 하나가 돌아게가할수 있다. 코어 하나를 사용하는 것에 비해 성능이 개선된다.
+- 하지만, 메모리를 공유하지 못하는 등의 단점도 존재 > 세션을 메모리에 저장(문제O) > 레디스(DB) 등의 서버를 도입하여 해결
+
+ex. **BackEnd\4. http 모듈로 서버 만들기\cluster\cluster.js**
+<br>
+<img scr="https://user-images.githubusercontent.com/41010744/103734213-d8be4d00-502e-11eb-85ef-81a156e4381f.png">
+<br>
+
+- http://localhost:8086에 접속하면 1초 후 콘솔에 워커가 종료되었다는 메시지 > 8번 새로고침시 모든 워커가 종료되어 서버가 응답하지 X
+
+```javascript
+cluster.on("exit", (worker, code, signal) => {
+  console.log(`${worker.process.pid}번 워커가 종료되었습니다.`);
+  console.log("code", code, "signal", signal);
+  cluster.fork();
+});
+```
+
+- cluster.fork()를 통해 워커 하나가 종료될 때마다 새로운 워커를 생성 > 오류처리 > but, 실무에서는 pm2 등의 모듈로 cluster 기능 사용 > 15.1.5절에서 설명
+- 4.2절의 웹 서버 주소는 HTML/CSS같은 정적파일을 요청하는 주소와 서버의 users 자원을 요청하는 주소로 크게 나뉘어져 있습니다 > 만약 파일이나 자원의 수가 늘어나면 그에 따라 주소의 종류 多
+- 많은 if문이 코드가 상당히 길어져 보기도 어렵고 관리도 어렵습니다. 주소의 수가 많아질수록 코드가 계속 길어짐
+- **해결책 : Express 모듈** > 다른 사람들이 만들어둔 모듈이므로 설치 필요 > 5절 : npm 통한 모듈 설치 및 직접 만들어 배포
