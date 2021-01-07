@@ -2296,3 +2296,453 @@ ex. **BackEnd\5. 패키지 매니저\package.json\package.json**
 
 - npm info [패키지명]을 통해 이름을 사용하고 있는지 확인 가능
 - npm unpublish [패키지명] --force : 배포한 패키지 삭제 > 72시간이 지나면 삭제 불가능
+
+### 6. 익스프레스 웹 서버 만들기
+
+- 익스프레스 : http 모듈의 요청과 응답 객체에 추가 기능들을 부여, 기존 메서드들도 계속 사용할 수 있지만 편리한 메서드들을 추가하여 보완
+- 코드를 분리하기 쉽게 만들어 관리하기도 용이
+- 더이상 if문으로 요청 메서드와 주소를 구별하지 않아도 된다.
+
+##### 웹 서버 프레임워크
+
+- 익스프레스 외에도 koa나 hapi 같은 웹서버 프레임워크가 존재
+- npm 패키지의 다운로드 수를 비교 : npmtrends(http://www.npmtrends.com/)
+
+#### 익스프레스 프로젝트 시작하기
+
+ex. **BackEnd\6. 익스프레스 웹 서버 만들기\익스프레스 프로젝트 시작하기\package.json&app.js&index.html**
+
+- scripts 부분에 start 속성은 필수 > nodemon app을 하면 app.js를 nodemon으로 실행 > 서버 코드에 수정 사항이 생길때마다 매번 서버를 재시작하는 것이 아닌 nodemon 모듈로 서버를 자동으로 재시작, nodemon이 실행되는 콘솔에 rs를 입력하여 수동으로 재시작할수도 있음
+- nodemon은 개발용으로 사용하는 것을 권장 > 배포 후에는 서버 코드가 빈번하게 변경될일이 X
+- Express 내부에 http 모듈이 내장 > 서버 역할 가능
+- **app.set('port', 포트)** : 서버가 실행될 포트를 설정 , process.env 객체에 PORT 속성이 있다면 그값을 사용하고, 없다면 기본 값으로 3000포트를 이용, 이렇게 app.set(키, 값)을 사용하여 데이터를 저장 > 나중에 데이터를 app.get(키)를 통해 가져올 수있음
+- **app.get(주소, 라우터)** : 주소에 대한 GET 요청이 올때 어떤 동작을 할지 적는 부분, 매개변수 req는 요청에 관한 정보가 들어 있는 객체, res는 응답에 관한 정보가 들어있는 객체, 현재 GET / 요청시 응답으로 Hello, Express를 전송, **익스프레스에서는 res.write나 res.end 대신 res.send 사용**
+- GET 요청 외에도 POST, PUT, PATCH, DELETE, OPTIONS에 대한 라우터를 위한 app.post, app.put, app.patch. app.delete, app.options 메서드가 존재
+- listen을 하는 부분은 http 웹서버와 동일
+- 단순한 문자열 대신 HTML로 응답하고 싶다면 res.sendFile 메서드를 사용 > 단 파일의 경로를 path 모듈을 사용해서 지정
+
+#### 자주 사용하는 미들웨어
+
+- 익스프레스의 핵심은 미들웨어 인데 요청과 응답의 중간(middle)에 위치하여 미들웨어라고 부른다.
+- 뒤에 나오는 라우터와 에러 핸들러 또한 미들웨어의 일종
+- 미들웨어는 요청과 응답을 조작하여 기능을 추가하기도하고, 나쁜 요청을 걸러내기도 한다
+- **app.use(미들웨어)** : 익스프레스 서버에 미들웨어 연결
+
+ex. **BackEnd\6. 익스프레스 웹 서버 만들기\자주 사용하는 미들웨어\app.js**
+
+```javascript
+//...
+app.set("port", process.env.PORT || 3000);
+
+app.use((req, res, next) => {
+  console.log("모든 요청에 다 실행됩니다.");
+  next();
+});
+app.get(
+  "/",
+  (req, res, next) => {
+    console.log("GET / 요청에서만 실행됩니다.");
+    next();
+  },
+  (req, res) => {
+    throw new Error("에러는 에러 처리 미들웨어로 갑니다.");
+  }
+);
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).send(err.message);
+});
+
+app.listen(app.get("port"), () => {
+  //...
+});
+//...
+```
+
+- app.use에 매개변수가 req,res,next인 함수를 넣으면 됩니다. 미들웨어는 위에서부터 아래로 순서대로 실행되면서 요청과 응답 사이에 특별한 기능을 추가할 수 있습니다. 이번에는 next라는 세번째 매개변수를 사용했는데, 다음 미들웨어로 넘어가는 함수, next를 실행하지 않으면 다음 미들웨어가 실행되지 X
+- 주소를 첫번째 인수로 넣어주지 않는다면 미들웨어는 모든 요청에서 실행되고, 주소를 넣는다면 해당하는 요청에서만 실행
+- ex. app.use(미들웨어) : 모든 요청에서 미들웨어 실행
+- ex. app.use('/abc',미들웨어) : abc로 시작하는 요청에서 미들웨어 실행
+- ex. app.post('/abc', 미들웨어) : abc로 시작하는 post 요청에서 미들웨어 실행
+- app.use나 app.get 같은 라우터에 미들웨어 여러개 장착 가능 현재 app.get 라우터에 미들웨어 두개가 연결, 다만 이때도 next를 호출해야 다음 미들웨어로 넘어갈 수 있습니다.
+- 현재 app.get('/')의 두번째 미들웨어에서 에러가 발생하고, 이 에러는 그 아래에 있는 에러처리 미들웨어에 전달
+- 에러처리 미들웨어는 매개변수가 err, req, res, next로 4개, **모든 매개변수를 사용하지 않더라도 매개변수가 반드시 4개**
+- 첫 번째 매개변수 err에는 에러에 관한 정보, res.status 메서드로 HTTP 상태 코드를 지정, 기본 값은 200(성공)
+- 에러 처리 미들웨어를 연결하지 않아도 기본적으로 익스프레스가 에러를 처리하긴 하지만 실무에서는 직접 에러 처리 미들웨어를 만드는 것이 좋다. 특별한 경우가 아니라면 가장 아래에 위치
+- **npm i morgan cookie-parser express-session dotenv** : 실무에서 자주 사용하는 패키지들, dotenv(process.env를 관리하기 위한)를 제외한 다른 패키지는 미들웨어
+
+```javascript
+const express = require("express");
+const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const dotenv = require("dotenv");
+const path = require("path");
+
+dotenv.config();
+const app = express();
+app.set("port", process.env.PORT || 3000);
+
+app.use(morgan("dev"));
+app.use("/", express.static(path.join(__dirname, "public")));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(
+  session({
+    resave: false,
+    saveUninitialized: false,
+    secret: process.env.COOKIE_SECRET,
+    cookie: {
+      httpOnly: true,
+      secure: false,
+    },
+    name: "session-cookie",
+  })
+);
+```
+
+- .env 파일도 생성, 파일명이 .env이고 확장자는 없습니다.
+- 설치했던 패키지들을 app.use에 연결, req,res,next가 보이지 않지만 미들웨어 내부에 들어 있어 다음 미들웨어로 넘어갈 수 있다.
+- **dotenv 패키지** : .env 파일을 읽어 prcess.env로 만듭니다. dot(점)+env, process.env.COOKIE_SECRET에 cookiesecret 값이 할당 키=값 형식으로 추가
+- process.env를 별도의 파일로 관리하는 이유는 보안과 설정의 편의성 때문, 비밀 키들을 소스코드에 그대로 적어두면 소스코드가 유출되었을 때 키도 같이 유출 따라서, .env 같은 별도의 파일에 비밀 키를 적어두고 dotenv 패키지로 비밀 키를 로딩하는 방식으로 관리
+- 소스코드가 유출되더라도 .env 파일만 잘 관리하면 비밀키를 지킬수있다.
+
+##### morgan
+
+- morgan 연결 후 localhost:3000에 접속해보면 기존 로그 외에 추가적인 로그를 확인할 수 있다.
+- ex. GET / 500 7.409ms - 50 : [HTTP 메서드] [주소] [HTTP 상태 코드] [응답 속도] - [응답 바이트] > 요청과 응답을 한눈에 볼 수 있어 편리
+- **app.use(morgan('dev'));** 처럼 사용, 인수로 combined, common, short, tiny 등을 넣을 수 있습니다. 인수를 바꾸면 로그가 달라진다, 개발 환경에서는 dev를 배포 환경에서는 combined를 사용
+
+##### static
+
+- 정적인 파일들을 제공하는 라우터 역할, 기본적으로 제공되기에 따로 설치할 필요 없이 express 객체 안에서 꺼내 사용하면 된다.
+- **app.use('요청 경로',express.static('실제 경로'));**
+- ex. app.use('/', express.static(path.join(\_\_dirname, 'public')));
+- 함수의 인수로 정적파일들이 담겨 있는 폴더를 지정, 예시에서는 public 폴더가 지정
+- ex. **public/stylesheets/style.css는 http://localhost:3000/stylesheets/style.css로 접근**
+- public 폴더를 만들고 css나 js, 이미지 파일들을 public 폴더에 넣으면 브라우저에서 접근 가능
+- 실제 서버의 폴더 경로에는 public이 들어 있지만, 요청 주소에는 public이 들어있지 않다 > 서버의 폴더 경로와 요청 경로가 다르므로 외부인이 서버의 구조를 쉽게 파악할 수 없습니다. > 보안에 큰 도움
+- 또한, 정적 파일들을 알아서 제공해주므로 4.3절처럼 fs.readFile로 파일을 직접 읽어서 전송할 필요 X
+- 만약 요청 경로에 해당하는 파일이 없으면 알아서 내부적으로 next를 호출
+- 만약 파일을 발견했다면 다음 미들웨어는 실행되지 않습니다. 응답으로 파일을 보내고 next를 호출하지 X
+
+##### body-parser
+
+- 요청의 본문에 있는 데이터를 해석해서 req.body 객체로 만들어주는 미들웨어
+- 보통 폼 데이터나 AJAX 요청의 데이터를 처리
+- 단 멀티파트(이미지, 동영상, 파일) 데이터는 처리하지 못합니다 > 그 경우 뒤에는 multer 모듈 사용
+- **app.use(express.json());**
+- **app.use(express.urlencoded({extended:false}));**
+- 다른 책이나 코드에서 body-parser를 설치하지만 익스프레스 4.16.0 버전부터 body-parser 미들웨어 기능이 익스프레스에 내장
+- 단 body-parser는 JSON과 URL-encoded 형식의 데이터 외에도 Raw(요청의 본문이 버퍼 데이터), Text(텍스트 데0이터) 형식의 데이터를 추가로 해석할수 있는데 Raw, Text 요청을 처리할 필요가 있다면 body-parser 설치한 후 아래와 같이 추가
+
+1. npm i body-parser
+2. const bodyParser = require('body-parser');
+3. app.user(bodyParser.raw());
+4. app.user(bodyParser.text());
+
+- 요청 데이터의 종류
+
+1. JSON : JSON 형식의 데이터 전달 방식
+2. URL-encoded : 주소 형식으로 데이터를 보내는 방식, 폼 전송할때 주로 사용
+
+- urlencoded 메서드를 보면 {extended : false} 옵션이 들어있는데 이 옵션이 false면 노드의 querystring 모듈을 사용하여 쿼리스트링을 해석하면, true면 qs 모듈을 사용하여 쿼리스트링을 해석
+- qs 모듈은 내장 모듈이 아니라 npm 패키지이며, querystring 모듈의 기능을 좀더 확장한 모듈
+- 4.2 절의 POST와 PUT 요청의 본문을 전달 받으려면 req.on('data'), req.on('end')로 스트림을 사용해야 했지만 body-parser를 사용하면 내부적으로 스트림을 처리해 req.body에 추가
+- ex. JSON 형식으로 {name:'zerocho', book:'nodejs'}를 본문으로 보낸다면 req.body에 그대로 들어가 URL-encoded 형식으로 name=zerocho&book=nodejs를 보문으로 보낸다면 req.body에 {name:'zerocho',book:'nodejs'} 가 들어갑니다.
+
+##### cookie-parser
+
+- 요청에 동봉된 쿠키를 해석해 req.cookies 객체로 만듭니다 > 4.3절의 parseCookies 함수와 비슷한 기능
+- **app.use(cookieParser(비밀키));**
+- 해석된 쿠키들은 req.cookies 객체에 들어갑니다.
+- ex. name=zerocho 쿠키를 보냈다면 req.cookies는 {name:'zerocho'}가 됩니다. 유효기간이 지난 쿠키는 알아서 걸러냅니다.
+- 첫번째 인수로 비밀키를 넣어주는데 서명된 쿠키가 있는 경우, 제공한 비밀키를 통해 해당 쿠키가 내 서버가 만든 쿠키임을 검증 가능하다.
+- 쿠키는 클라이언트에서 위조하기 쉬우므로 비밀 키를 통해 만들어낸 서명을 쿠키 값 뒤에 붙입니다. 서명이 붙으면 쿠키가 name=zerocho.sign과 같은 모양이 됩니다.
+- 서명된 쿠키는 req.cookies 대신 req.signedCookieds 객체에 들어 있습니다.
+- **쿠키 생성/제거** : req.cookie, res.clearCookie 메서드를 사용
+- res.cookie(키, 값, 옵션) 형식으로 쿠키 생성 > 옵션은 4.3절 쿠키 옵션과 동일 > domain, expires, httpOnly, maxAge, path, secure 등이 존재
+
+```javascript
+res.cookie("name", "zerocho", {
+  expires: new Date(Date.now() + 900000),
+  httpOnly: true,
+  secure: true,
+});
+res.clearCookie("name", "zerocho", { httpOnly: true, secure: true });
+```
+
+- 쿠키를 지우려면, 키와 값 외에 옵션도 정확히 일치해야 지워집니다. 단 expires나 maxAge 옵션은 일치할 필요 X
+- 옵션 중에 signed라는 옵션이 있는데, 이를 true로 설정하면 쿠키 뒤에 서명이 붙습니다.
+- 내 서버가 쿠키를 만들었다는 것을 검증할 수 있으므로 대부분의 경우 서명 옵션을 켜두는 것이 좋습니다.
+- 서명을 위한 비밀 키는 cookieParser 미들웨어에 인수로 넣은 process.env.COOKIE_SECRET이 됩니다.
+
+##### express-session
+
+- 세션 관리용 미들웨어, 로그인 등의 이유로 세션을 구현하거나 특정 사용자를 위한 데이터를 임시적으로 저장할때 매우 유용
+- 세션은 사용자별로 req.session 객체 안에 유지
+
+```javascript
+app.use(
+  session({
+    resave: false,
+    saveUninitialized: false,
+    secret: process.env.COOKIE_SECRET,
+    cookie: {
+      httpOnly: true,
+      secure: false,
+    },
+    name: "session-cookie",
+  })
+);
+```
+
+- express-session 1.5 버전 이전에는 내부적으로 cookie-parser를 사용하고 있어 cooke-parser 미들웨어보다 뒤에 위치해야 했지만, 1.5버전 이후에는 사용하지 않게되어 순서가 상관 X
+- 그래도 cooke-parser 미들웨어 뒤에 놓는 것이 안전
+- express-session은 인수로 세션에 대한 설정을 받습니다. **resave**는 요청이 올 때 세션에 수정 사항이 생기지 않더라도 세션을 다시 저장할지 설정, **saveUninitialized**는 세션에 저장할 내역이 없더라도 처음부터 세션을 생성할지 설정
+- express-session은 세션 관리 시 클라이언트에 쿠키를 보냅니다. > 4.3절 세션/쿠키
+- 안전하게 쿠키를 전송하려면 쿠키에 서명을 추가, 쿠키를 서명하는데 secret의 값이 필요 > cookie-parser의 secret과 같게 설정하는 것이 좋다 > 세션 쿠키의 이름은 name 옵션으로 설정, 기본 이름은 connect.sid
+- cookie 옵션은 세션 쿠키에 대한 설정, 일반적인 쿠키 옵션 모두 제공되며 예제에서는 secure는 false로 https가 아닌 환경에서도 사용할 수 있게 하고, httpOnly를 true로 설정해 클라이언트에서 쿠키를 확인하지 못하도록 하였습니다.
+- 배포시에는 https를 적용하고 secure도 true로 설정하는 것이 좋습니다.
+- 예제 코드에서 나와있지는않지만 **store**라는 옵션도 있습니다. 현재는 메모리에 세션을 저장하도록 되어 있는데 서버를 재시작하면 메모리가 초기화 되어 세션이 모두 사라져 문제가 생깁니다. 따라서 배포 시에는 store에 데이터베이스를 연결하여 세션을 유지하는 것이 좋습니다. > 보통 레디스가 자주 사용
+
+```javascript
+req.session.name = "zerocho"; //세션 등록
+req.sessionID; //세션 아이디 확인
+req.session.destroy(); //세션 모두 제거
+```
+
+- express-session으로 만들어진 req.session 객체에 값을 대입하거나 삭제해서 세션을 변경할수 있습니다.
+- 세션을 강제로 저장하기 위해 req.session.save라는 메서드가 존재하지만, 일반적으로 요청이 끝날 때 자동으로 호출되므로 직접 save 메서드를 호출할 일은 없습니다.
+- 실제 로그인은 9.3절에서 하지만, 세션 쿠키의 모양이 조금 독특하니 미리 미리 알아두면 좋습니다.
+- express-session에서 서명한 쿠키 앞에는 **s:** 이 붙습니다. 실제로는 encodeURIComponent 함수가 실행되어 **s%3A** 가 됩니다.
+- 앞에 **S%3A** 가 붙은 경우 이 쿠키가 express-session 미들웨어에 의해 암호화된 것이라고 생각
+
+##### 미들웨어의 특성 활용하기(지금까지 내용 정리)
+
+```javascript
+app.use((req,res,next)=>{
+  console.log('모든 요청에 다 실행됩니다.);
+  next();
+});
+```
+
+- 미들 웨어는 req,res,next를 매개변수로 가진 함수(에러 처리 미들웨어만 예외적으로 err,req,res,next를 가집니다.)로서 app.use나 app.get, app.post 등으로 장착
+- 특정 주소의 요청에만 미들웨어가 실행되게 하려면 첫 번째 인수로 주소를 넣으면 됩니다.
+
+```javascript
+app.use(
+  morgan("dev"),
+  express.static("/", path.join(__dirname, "public")),
+  express.json(),
+  express.urlencoded({ extended: false }),
+  cookieParser(process.env.COOKIE_SECRET)
+);
+```
+
+- 위와 같이 동시에 여러 개의 미들웨어를 장착할 수도 있으며 다음 미들웨어로 넘어가려면 next함수를 호출
+- 위 미들웨어들은 내부적으로 next를 호출하고 있으므로 연달아 사용 가능
+- next를 사용하지 않는 미들웨어는 res.send나 res.sendFile 등의 메서드로 응답을 보내야 한다 ex. express.static : next 대신 res.sendFile 메서드로 응답 보냄
+- 따라서 정적파일을 제공하는 경우 express.json, express.urlencoded, cookieParser 미들웨어는 실행X
+- 미들웨어 장착 순서에 따라 어떤 미들웨어는 실행되지 않을 수도 있다
+- 만약 next도 호출하지 않고 응답도 보내지 않으면 클라이언트는 응답을 받지 못해 하염없이 기다린다
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/103878204-72fabf80-5119-11eb-8075-d40c26f50e6d.png">
+  <br>
+
+- 지금까지는 next 인수를 넣지 않았지만 인수를 넣는다면 특수한 동작 > route라는 문자열 넣으면 다음 라우터의 미들웨어로 바로 이동, 그외의 인수(에러 처리 미들웨어의 err 매개변수)를 넣으면 바로 에러처리 미들웨어로 이동
+- 미들웨어 간에 데이터를 전달하는 방법도 있습니다. 세션을 사용한다면 req.session 객체에 데이터를 넣어도 되지만, 세션이 유지되는 동안 데이터도 계속 유지된다는 단점이 있습니다. 만약 요청이 끝날때까지만 데이터를 유지하고 싶다면 req 객체에 데이터를 넣어두면 됩니다.
+
+```javascript
+app.use(
+  (req, res, next) => {
+    req.data = "데이터 넣기";
+    next();
+  },
+  (req, res, next) => {
+    console.log(req.data); //데이터 받기
+    next();
+  }
+);
+```
+
+- 현재 요청이 처리되는 동안 req.data를 통해 미들웨어 간에 데이터를 공유, 새로운 요청이 오면 req.data는 초기화
+- 속성명이 꼭 data일 필요는 없지만 다른 미들웨어와 겹치지 않게 조심
+- ex. 속성명을 body로 한다면(req.body) body-parser 미들웨어와 기능이 겹치게 된다.
+
+##### app.set과의 차이
+
+- app.set으로 익스프레스에서 데이터를 저장할 수 있다는 것을 배웠습니다.
+- app.get 또는 req.app.get으로 어디서든지 데이터를 가져올수 있지만 req 객체에 데이터를 넣어 다음 미들웨어로 전달하는 이유는 app.set은 익스프레스에서 전역으로 사용되기 때문에 사용자 개개인의 값을 넣기에는 부적절하며, 앱 전체의 설정을 공유할때 사용
+- req 객체는 요청을 보낸 사용자 개개인에게 귀속되므로 req 객체를 통해 개인의 데이터를 전달하는 것이 좋습니다.
+
+##### 미들웨어를 사용할 때 유용한 패턴
+
+- 미들웨어 안에 미들웨어를 넣는 방식
+
+```javascript
+app.use(morgan("dev"));
+// 또는
+app.user((req, res, next) => {
+  morgan("dev")(req, res, next);
+});
+```
+
+- 이 패턴이 유용한 이유는 기존의 미들웨어 기능을 확장할 수 있기 때문이다.
+- 예를 들어 다음과 같이 분기 처리를 할 수도 있습니다. 조건문에 따라 다른 미들웨어를 적용하는 코드
+
+```javascript
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV == "production") {
+    morgan("combined")(req, res, next);
+  } else {
+    morgan("dev")(req, res, next);
+  }
+});
+```
+
+##### multer
+
+- 사용 방법이 다소 어려운 미들웨어
+- 이미지, 동영상 등을 비롯한 여러 가지 파일들을 멀티파트 형식으로 업로드 할때 사용하는 미들웨어
+- **멀티파트** : enctype이 multipart/form-data인 폼을 통해 업로드하는 데이터의 형식
+
+```html
+<form action="/upload" method="post" enctype="multipart/form-data">
+  <input type="file" name="image" />
+  <input type="text" name="title" />
+</form>
+```
+
+- 다음과 같이 html파일의 form 형태의 데이터를 업로드
+- 멀티파트 형식으로 업로드하는 데이터는 개발자 도구 _network_ 탭에서 확인 가능하다.
+- 이러한 폼을 통해 업로드하는 파일은 body-parser로 처리할 수 없고 직접 파싱(해석)하기도 어려우므로 multer 미들웨어를 따로 사용하면 편리
+
+```javascript
+const multer = require("multer");
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination(req, file, done) {
+      done(null, "uploads/");
+    },
+    filename(req, file, done) {
+      const ext = path.extname(file.originalname);
+      done(null, path.basename(file.originalname, ext) + Date.now() + ext);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
+```
+
+- multer 함수의 인수로 설정을 넣습니다.
+- storage : 어디에(destination) 어떤 이름으로(filename) 저장할지를 넣습니다. destination과 filename 함수의 req 매개변수에는 요청에 대한 정보가, file 객체에는 업로드한 파일에 대한 정보가 있습니다. done 매개변수는 함수입니다.
+- 첫 번째 인수에는 에러가 있다면 에러를 넣고, 두번째 인수에는 실제 경로나 파일 이름을 넣어주면 됩니다. req나 file의 데이터를 가공해 done으로 넘기는 형식
+- 현재 설정으로는 uploads 라는 폴더에 [파일명+현재시간.확장자] 파일명으로 업로드하고 있습니다. 현재 시간을 넣어주는 이유는 업로드하는 파일명이 겹치는 것을 막기 위해서 입니다.
+- limits 속성에는 업로드에 대한 제한 사항을 설정할 수 있습니다. 파일 사이즈(fileSize, 바이트 단위)는 5MB로 제한해두었습니다.
+- 다만 위 설정을 실제로 활요하기 위해서는 서버에 uploads 폴더가 꼭 존재해야합니다. 없다면 직접 만들어주거나 fs 모듈을 사용해 서버를 시작할때 생성합니다.
+
+```javascript
+const fs = require("fs");
+
+try {
+  fs.readdirSync("uploads");
+} catch (error) {
+  console.error("uploads 폴더가 없어 uploads 폴더를 생성합니다.");
+  fs.mkdirSync("uploads");
+}
+```
+
+- 설정이 끝나면 upload 변수가 생기는데 여기에 다양한 종류의 미들웨어가 들어 있습니다.
+- 먼저 파일을 하나만 업로드하는 경우(multipart.html과 같은 경우)에는 single 미들웨어를 사용합니다.
+
+```javascript
+app.post("/upload", upload.single("image"), (req, res) => {
+  console.log(req.file, req.body);
+  res.send("ok");
+});
+```
+
+- single 미들웨어를 라우터 미들웨어 앞에 넣어두면, multer 설정에 따라 파일 업로드 후 req.file 객체가 생성
+- 인수는 input 태그의 name이나 폼 데이터의 키와 일치하게 넣으면 됩니다.
+- 업로드 성공 결과는 req.file 객체 안에 들어 있습니다.
+- req.body에는 파일이 아닌 데이터인 title이 들어 있습니다.
+- ex. req.file 객체
+
+```javascript
+{
+  fieldname : 'img',
+  originalname : 'nodejs.png',
+  encoding : '7bit',
+  mimetype : 'image/png',
+  destination : 'uploads/',
+  filename : 'nodejs1514197844339.png',
+  path: 'uploads\\nodejs1514197844339.png',
+  size : 53357
+}
+```
+
+- 여러 파일을 업로드 하는 경우 HTML의 input 태그에 multiple을 사용
+
+```html
+<form id="form" action="/upload" method="post" enctype="multipart/form-data">
+  <input type="file" name="many" multiple />
+  <input type="text" name="title" />
+  <button type="submit">업로드</button>
+</form>
+```
+
+- 미들웨어는 single 대신 array로 교체
+
+```javascript
+app.post("/upload", upload.array("many"), (req, res) => {
+  console.log(req.files, req.body);
+  res.send("ok");
+});
+```
+
+- 업로드 결과도 req.file 대신 req.files 배열에 들어 있습니다.
+- 파일을 여러개 업로드 하지만 input 태그나 폼 데이터의 키가 다른 경우 fields 미들웨어를 사용
+
+```html
+<form id="form" action="/upload" method="post" enctype="multipart/form-data">
+  <input type="file" name="image1" />
+  <input type="file" name="image2" />
+  <input type="text" name="title" />
+  <button type="submit">업로드</button>
+</form>
+```
+
+- fields 미들웨어의 인수로 input 태그의 name을 각각 적습니다.
+
+```javascript
+app.post(
+  "/upload",
+  upload.fields([{ name: "image1" }, { name: "image2" }]),
+  (req, res) => {
+    console.log(req.files, req.body);
+    res.send("ok");
+  }
+);
+```
+
+- 업로드 결과도 req.files.image1, req.files.image2에 각각 존재
+- 특수한 경우지만 파일을 업로드하지않고 멀티파트형식으로 업로드하는 경우가 있습니다. 그럴 때는 none 미들웨어를 사용
+
+```html
+<form id="form" action="/upload" method="post" enctype="multipart/form-data">
+  <input type="text" name="title" />
+  <button type="submit">업로드</button>
+</form>
+```
+
+```javascript
+app.post("/upload", upload.none(), (req, res) => {
+  console.log(req.body);
+  res.send("ok");
+});
+```
+
+- 파일을 업로드하지 않았으므로 req.body만 존재
+- ex. **BackEnd\6. 익스프레스 웹 서버 만들기\자주 사용하는 미들웨어\app.js&multipart.html**
