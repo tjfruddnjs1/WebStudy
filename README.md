@@ -1,4 +1,4 @@
-# Front-End
+d# Front-End
 
 ## 실습 과정
 
@@ -1589,7 +1589,7 @@ ex. **BackEnd\3. 노드 기능 알아보기\파일 시스템 접근하기\writeF
 
 - writeFile 메서드에 생성될 파일의 경로와 내용을 입력
 
-1. 동기 메서드와 비동기 메서드
+1. 동기 메서드와 ���동기 메서드
 
 - setTimeout같은 타이머와 process.nextTick 외에도, 노드는 대부분의 메서드를 비동기 방식으로 처리
 - 하지만 몇몇 메서드는 동기 방식으로도 사용할 수 있다. 특히 fs 모듈이 그러한 메서드를 많이 가지고 있음
@@ -2368,7 +2368,7 @@ app.listen(app.get("port"), () => {
 - 현재 app.get('/')의 두번째 미들웨어에서 에러가 발생하고, 이 에러는 그 아래에 있는 에러처리 미들웨어에 전달
 - 에러처리 미들웨어는 매개변수가 err, req, res, next로 4개, **모든 매개변수를 사용하지 않더라도 매개변수가 반드시 4개**
 - 첫 번째 매개변수 err에는 에러에 관한 정보, res.status 메서드로 HTTP 상태 코드를 지정, 기본 값은 200(성공)
-- 에러 처리 미들웨어를 연결하지 않아도 기본적으로 익스프레스가 에러를 처리하긴 하지만 실무에서는 직접 에러 처리 미들웨어를 만드는 것이 좋다. 특별한 경우가 아니라면 가장 아래에 위치
+- 에러 처리 미들웨어를 연결하지 않아도 기본적으로 익스프레스가 에러를 처리하긴 하지만 실무에서는 직접 에러 처리 미들웨어를 만드는 것이 좋다. 특별한 경��가 아니라면 가장 아래에 위치
 - **npm i morgan cookie-parser express-session dotenv** : 실무에서 자주 사용하는 패키지들, dotenv(process.env를 관리하기 위한)를 제외한 다른 패키지는 미들웨어
 
 ```javascript
@@ -2746,3 +2746,463 @@ app.post("/upload", upload.none(), (req, res) => {
 
 - 파일을 업로드하지 않았으므로 req.body만 존재
 - ex. **BackEnd\6. 익스프레스 웹 서버 만들기\자주 사용하는 미들웨어\app.js&multipart.html**
+
+#### Router 객체로 라우팅 분리하기
+
+- 4.2절에서 라우터를 만들 때는 요청 메서드와 주소별로 분기 처리를 하느라 코드가 매우 복잡하고, if문으로 분기하고 코딩하여 보기에도 좋지 않고 확장하기도 어려웠습니다.
+- 익스프레스를 사용한느 이유 중 하나는 라우팅을 깔끔하게 관리할 수 있다는 점입니다.
+- **라우팅(routing)** : 어떤 네트워크 안에서 통신 데이터를 보낼 때 최적의 경로를 선택
+- ex. **BackEnd\6. 익스프레스 웹 서버 만들기\Router객체로 라우팅 분리하기\routes\index.js&&user.js**
+- 라우터를 많이 연결하면 app.js 코드가 매우 길어지므로 익스프레스에서는 라우터를 분리할 수 있는 방법을 제공합니다. > routes 폴더를 만들고 그 안에 분리한 라우터를 작성
+- 만들었던 index.js와 user.js를 app.use를 통해 app.js에 연결, 또한 에러 처리 미들웨어 위에 404 상태 코드를 응답하는 미들웨어를 추가
+- ex. **BackEnd\6. 익스프레스 웹 서버 만들기\Router객체로 라우팅 분리하기\routes\app.js**
+
+```javascript
+const indexRouter = require("./routes");
+const userRouter = require("./routes/user");
+//....
+app.use("/", indexRouter);
+app.use("/user", userRouter);
+```
+
+- indexRouter를 ./routes로 require할 수 있는 이유는 index.js는 생략 가능
+- ex. require('./routes/index.js')와 require('./routes')는 같다
+- index.js와 user.js 모양이 거의 비슷하지만, 다른 주소의 라우터 역할을 하고 있습니다.
+- app.use로 연결할 때의 차이 때문인데 indexRouter는 app.use('/')에 연결했고, userRouter는 app.user('/user')에 연결했습니다.
+- indexRouter는 user의 '/'와 get의 '/'가 합쳐져 GET/ 라우터가 되었고, userRouter는 user의 '/user'와 get의 '/'가 합쳐져 GET/user 라우터가 되었습니다.
+- 이렇게 app.use로 연결할 때 주소가 합쳐진다는 것을 염두에 두면 됩니다.
+
+```javascript
+router.get(
+  "/",
+  function (req, res, next) {
+    next("route");
+  },
+  function (req, res, next) {
+    console.log("실행되지 않습니다");
+  }
+);
+router.get("/", function (req, res) {
+  console.log("실행됩니다");
+  res.send("hello, express");
+});
+```
+
+- next 함수에 다음 라우터로 넘어가는 기능 > next('route') > 라우터에 연결된 나머지 미들웨어들을 건너뛰고 싶을 때 사용
+- 위 예제처럼 같은 주소의 라우터를 여러 개 만들어도 됩니다. 라우터가 몇개든 간에 next() 호출하면 다음 미들웨어가 실행
+
+```javascript
+router.get("/user/:id", function (req, res) {
+  console.log(req.params, req.query);
+});
+```
+
+- 라우터 주소에는 정규표현식을 비롯한 특수 패턴을 사용 가능 > 여러가지 패턴 중 라우트 매개변수라 불리는 패턴
+- 주소에 :id > 다른 값을 넣을수 있다 ex. /user/1, /user/123 요청을 라우터가 처리
+- :id에 해당하는 1이나 123을 조회가능하며 req.params 객체 안에 들어있다
+- ex. :id면 req.params.id로, :type이면 req.params.type으로 조회 가능
+- 단 이패턴을 사용할시 일반 라우터보다 뒤에 위치해야한다 > 다양한 라우터를 아우르는 와일드카드 역할 > 일반 라우터보다는 뒤에 위치해야 다른 라우터를 방해하지 X
+
+```javascript
+router.get("/user/:id", function (req, res) {
+  console.log("얘만 실행됩니다");
+});
+router.get("/user/like", function (req, res) {
+  console.log("실행되지 않습니다");
+});
+```
+
+- /user/like 같은 라우터는 /user/:id 같은 라우트 매개변수를 쓰는 라우터보다 뒤에 위치해야 한다
+- 주소에 쿼리스트링을 쓸때도 있는데 쿼리스트링의 키-값 정보는 req.query 객체 안에 들어 있다
+- ex. /users/123?limit=5&skip=10이라는 주소 요청이 들어왔을 때
+- req.params와 req.query객체 > **{id:'123'} {limit:'5', skip:'10'}**
+
+```javascript
+app.use((req, res, next) => {
+  res.status(404).send("Not Found");
+});
+```
+
+- app.js에서 에러 처리 미들웨어 위에 넣어둔 미들웨어는 일치하는 라우터가 없을 때 404 상태 코드를 응답하는 역할
+- 미들 웨어가 존재하지 않아도 익스프레스가 자체적으로 404 에러를 처리해주기는 하지만 연결해주는 것이 좋다.
+- 라우터에서 자주 쓰이는 활용법으로 **app.route와 router.route**가 존재
+- 다음과 같이 주소는 같지만 메서드가 다른 코드가 있을 때 이를 하나의 덩어리로 줄일 수 있습니다.
+
+```javascript
+router.get("/abc", (req, res) => {
+  res.send("GET/abc");
+});
+router.post("/abc", (req, res) => {
+  res.send("POST/abc");
+});
+```
+
+```javascript
+router
+  .route("/abc")
+  .get((req, res) => {
+    res.send("GET/abc");
+  })
+  .post((req, res) => {
+    res.send("POST/abc");
+  });
+```
+
+#### req, res 객체 살펴보기
+
+- 익스프레스의 req,res 객체는 http 모듈의 req,res 객체를 확장한 것
+- 기존 http 모듈의 메서드도 사용할 수 있고, 익스프레스가 추가한 메서드나 속성을 사용할 수 있다
+- ex. res.writeHead, res.write, res.end 메서드를 그대로 사용할 수 있으면서 res.send나 res.sendFile 같은 메서드 사용 가능
+- 다만, 익스프레스의 메서드가 워낙 편리하기에 기존 http 모듈의 메서드는 잘 사용 X
+- 익스프레스가 많은 속성과 메서드를 추가했지만, 여기서는 자주 쓰이는 것 위주로 살펴보기
+
+**req 객체**
+
+- req.app : req 객체를 통해 app 객체에 접근 > req.app.get('port') 식으로 사용 가능
+- req.body : body-parser 미들웨어가 만드는 요청의 본문을 해석한 객체
+- req.cookies : cookie-parser 미들웨어가 만드는 요청의 쿠키를 해석한 객체
+- req.ip : 요청의 ip 주소가 담겨 있다
+- req.params : 라우트 매개변수에 대한 정보가 담긴 객체
+- req.query : 쿼리스트링에 대한 정보가 담긴 객체
+- req.signedCookies : 서명된 쿠키들은 req.cookies 대신 여기에 담겨 있습니다.
+- req.get(헤더 이름) : 헤더의 값을 가져오고 싶을 때 사용하는 메서드
+
+**res 객체**
+
+- res.app : req.app처럼 res 객체를 통해 app 객체에 접근 가능
+- res.cookie(키, 값, 옵션) : 쿠키를 설정하는 메서드
+- res.clearCookie(키, 값, 옵션) : 쿠키를 제거하는 메서드
+- res.end() : 데이터 없이 응답을 보냅니다.
+- res.json(JOSN) : JSON 형식의 응답을 보냅니다.
+- res.redirect(주소) : 리다이렉트할 주소와 함께 응답을 보냅니다.
+- res.render(뷰, 데이터) : 다음절에서 다룰 템플릿 엔진을 렌더링해서 응답할 때 사용하는 메서드
+- res.send(데이터) : 데이터와 함께 응답을 보냅니다. 데이터는 문자열일수도 있고 HTML일수도 있으며 버퍼일수도 있고 객체나 배열일수도 있습니다.
+- res.sendFile(경로) : 경로에 위치한 파일을 응답합니다.
+- res.set(헤더, 값) : 응답의 헤더를 설정
+- res.status(코드) : 응답시의 HTTP 상태 코드를 지정
+
+##### 메서드 체이닝
+
+- req나 res 객체의 메서드는 다음과 같이 메서드 체이닝을 지원 > 코드의 양을 줄일수 있다
+
+```javascript
+res.status(201).cookie("test", "test").redirect("/admin");
+```
+
+#### 템플릿 엔진 사용하기
+
+- HTML은 정적인 언어이기 때문에 주어진 기능만 사용할 수 있고, 사용자가 기능을 직접 추가 불가능
+- HTML로 1000개의 데이터를 모두 표현하고 싶다면 일일이 코딩해서 넣어야 합니다 > JS로 표현하면 반복문으로 간단하게 처리
+- 템플릿 엔진은 자바스크립트를 사용해서 HTML을 렌더링 가능하게 > 따라서 기존 HTML과는 문법이 살짝 다르기도 하고 자바스크립트 문법이 들어 있기도 합니다.
+- **대표적인 템플릿 엔진 : 퍼그(Pug), 넌적스(Nunjucks)** > 앞으로 넌적스 사용
+
+##### 퍼그(제이드)
+
+- 예전 이름인 제이드(Jade)로 유명한 퍼그는 꾸준한 인기 > 문법이 간단하여 코드의 양이 줄음
+- 루비(Ruby)와 유사 but, HTML과는 문법이 많이 달라 호불호]
+- **npm i pug**
+- ex. **BackEnd\6. 익스프레스 웹 서버 만들기\템플릿 엔진 사용하기\퍼그\app.js**
+
+```javascript
+//...
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "pug");
+//...
+```
+
+- 익스프레스와 연결하려면 app.js에 다음 부분이 들어 있어야 한다.
+- views는 템플릿 파일들이 위치한 폴더를 지정하는 것입니다. res.render 메서드가 이 폴더 기준으로 템플릿 엔진을 찾아 렌더링, res.render('index')라면 views/index.pug를 렌더링합니다.
+- ex. res.render('admin/main') > views/admin/main.pug를 렌더링합니다.
+- view engine은 어떠한 종류의 템플릿 엔진을 사용할지 나타냅니다. 현재 pug로 설정되어 있으므로 그대로 사용하면 됩니다.
+
+**HTML 표현**
+
+- 기존 HTML과 다르게 화살괄호(<>)와 닫는 태그가 없습니다. 탭/스페이스로만 태그의 부모 자식 관계를 규명합니다. 탭 한번, 스페이스 두번/스페이스 네번 모드 상관 없습니다. 모든 파일에 동일한 종류이 들여쓰기를 적용
+- 자식 태그는 부모 태그보다 들여쓰기되어 있어야 합니다. 들여쓰기에 오류가 있으면 제대로 렌더링 X
+- 화살 괄호가 없으므로 태그의 속성도 태그명 뒤에 소괄호로 묶어 적습니다.
+
+```pug
+doctype html
+html
+  head
+    title=title
+    link(rel='stylesheet', href='/stylesheets/style.css)
+```
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>익스프레스</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+</html>
+```
+
+- 속성 중 아이디와 클래스가 있는 경우 다음과 같이 표현할수 있습니다. div 태그인 경우 div 문자는 생략 가능
+
+```pug
+#login-button
+.post-image
+span#highlight
+p.hidden.full
+```
+
+```html
+<div id="login-button"></div>
+<div class="post-image"></div>
+<span id="highlight"></span>
+<p class="hidden full"></p>
+```
+
+- HTML 텍스트는 다음과 같이 태그 또는 속성 뒤에 한칸을 띄고 입력
+
+```pug
+p Welcome to Express
+button(type='submit') 전송
+```
+
+```html
+<p>Welcome to Expresss</p>
+<button type="submit">전송</button>
+```
+
+- 에디터에서 텍스트를 여러 줄 입력하고 싶다면 다음과 같이 파이프(|)를 넣습니다. HTML 코드에서는 한줄로 나옵니다.
+
+```pug
+p
+  | 안녕하세요.
+  | 여러 줄을 입력합니다.
+  br
+  | 태그도 중간에 넣을 수 있습니다.
+```
+
+```html
+<p>
+  안녕하세요. 여러 줄을 입력합니다.
+  <br />
+  태그도 중간에 넣을 수 있습니다.
+</p>
+```
+
+- style이나 script 태그로 CSS/자바스크립트 코드를 작성하고 싶다면 태그 뒤에 점(.)을 붙입니다.
+
+##### HTML 엔티티와 이스케이프
+
+- 자바스크립트 문자열과 HTML 텍스트를 혼용할 때 특수 문자 때문에 가끔 에러 발생
+- ex. <strong></strong> 같은 문자열이 있다면 이것을 HTML에 사용했을 때 태그로 오해할 소지
+- 이를 방지하기 위해 특수 문자를 HTML 엔티티라는 코드로 변환
+- 대표적인 HTML 엔티티
+- < : &lt, > : &gt, & : &amp, 띄어쓰기 : &nbsp, " : &quot, ' : &apos
+
+##### 넌적스
+
+- 퍼그의 HTMl 문법 변화에 적응하기 힘든 분에 적합한 템플릿 엔진
+- HTML 문법을 그대로 사용하되 추가로 자바스크립트 문법을 사용할수 있다
+- **npm i nunjucks**
+
+```javascript
+nunjucks.configure("views", {
+  express: app,
+  watch: true,
+});
+```
+
+- 퍼그와 연결방법이 다소 다른데 configure의 첫 번째 인수로 views 폴더의 경로를 넣고, 두번째 인수로 옵션을 넣는다. 이때 express 속성에 app 객체를 연결합니다. watch 옵션이 true면 HTML 파일이 변경될 때 템플릿 엔진을 다시 렌더링
+- 파일은 퍼그와 같은 특수 확장자 대신 html을 그대로 사용해도 됩니다. 넌적스임을 구분하려면 확장장로 njk를 쓰면 됩니다.
+- 단, 이때는 view engine도 njk로 바꿔야 합니다.
+
+**변수**
+
+- res.render 호출 시 보내는 변수를 넌적스가 처리합니다.
+
+```javascript
+// routes/index.js
+router.get("/", function (req, res, next) {
+  res.render("index", { title: "Express" });
+});
+```
+
+```html
+<h1>{{title}}</h1>
+<p>welcome to {{title}}</p>
+<button class="{{title}}" type="submit">전송</button>
+<input placeholder="{{title}} 연습" />
+```
+
+- 내부에 변수를 사용할 수도 있습니다. 변수를 선언할 때는 {%set 변수 = '값' %}
+
+```html
+{% set node='Node.js'%} {% set js = 'javascript' %}
+<p>{{node}}와 {{js}}</p>
+```
+
+- HTML을 이스케이프하고 싶지 않다면 {{변수|safe}}를 사용
+
+```html
+<p>{{'<strong>이스케이프</strong>'}}</p>
+<p>{{'<strong>이스케이프 하지 않음</strong>' | safe}}</p>
+```
+
+```html
+<p>&lt;strong&gt;이스케이프&lt;/strong&gt;</p>
+<p><strong>이스케이프하지 않음</strong></p>
+```
+
+**반복문**
+
+- 넌적스에서는 특수한 구문을 {% %}안에 씁니다. 반복문도 이 안에 넣으면 됩니다.
+- for in 문과 endfor 사이에 위치하면 됩니다.
+
+```html
+<ul>
+  {% set fruits = ['사과','배','오렌지','바나나','복숭아'] %} {% for item in
+  fruites %}
+  <li>{{item}}</li>
+  {% endfor %}
+</ul>
+```
+
+```html
+<ul>
+  <li>사과</li>
+  //...
+  <li>복숭아</li>
+</ul>
+```
+
+- 반복문에서 인덱스를 사용하고 싶다면 loop.index라는 특수한 변수를 사용
+
+```html
+<ul>
+  {% set fruits = ['사과','배','오렌지','바나나','복숭아'] %} {% for item in
+  fruites %}
+  <li>{{loop.index}}번째 {{item}}</li>
+  {% endfor %}
+</ul>
+```
+
+**조건문**
+
+- {% if 변수 %}, {% elif %}, {% else %}, {% endif %}로 이루어져 있습니다.
+
+```html
+{% if isLoggedIn %}
+<div>로그인 되었습니다.</div>
+{% else %}
+<div>로그인이 필요합니다.</div>
+{% endif %}
+```
+
+- case문은 없지만 elif(else if 역할)을 통해 분기처리 가능
+
+```html
+{% if fruit == 'apple' %}
+<p>사과입니다.</p>
+{% elif fruit == 'banana' %}
+<p>바나나입니다.</p>
+//... {% else %}
+<p>사과도 바나나도 아닙니다</p>
+<% endif %>
+```
+
+- {{}}안에서는 다음과 같이 사용합니다.
+
+```html
+<div>{{'참' if isLoogedIn}}</div>
+<div>{{'참' if isLoggedIn else '거짓'}}</div>
+```
+
+```html
+<!-- isLoggedIn이 true일때 -->
+<div>참</div>
+<!-- isLoggedIn이 false 일때 -->
+<div>거짓</div>
+```
+
+**include**
+
+- 다른 HTML 파일을 넣을수 있습니다.
+- 헤더나 푸터, 내비게이션처럼 웹 제작 시 공통되는 부분을 따로 관리할 수 있어 매 페이지마다 동일한 HTML을 넣어야 하는 번거로움을 없앱니다.
+- include 파일 경로
+
+```html
+//1. header.html
+<header>
+  <a href="/">Home</a>
+  <a href="/about">About</a>
+</header>
+
+//2. footer.html
+<footer>
+  <div>푸터입니다.</div>
+</footer>
+
+//3. main.html {% include "header.html" %}
+<main>
+  <h1>메인 파일</h1>
+  <p>다른 파일을 include할 수 있습니다.</p>
+</main>
+{% include "footer.html" %}
+```
+
+**extends와 block**
+
+- 레이아웃을 정할 수 있습니다. 공통된 레이아웃 부분을 따로 관리할 수 있어 좋습니다. include와도 함께 사용
+
+```html
+//1.layout.html
+<! DOCTYPE html>
+<html>
+  <head>
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/style.css" />
+    {% block style %} {% endblock %}
+  </head>
+  <body>
+    <header>헤더 입니다.</header>
+    {% block content %} {% endblock %}
+    <footer>푸터 입니다.</footer>
+    {% block script %} {% endblock %}
+  </body>
+</html>
+//2. body.html {% extends 'layout.html %} {% block content %}
+<main>
+  <p>내용입니다.</p>
+</main>
+{% endblock %} {% block script %}
+<script src="/main.js"></script>
+{% endblock %}
+```
+
+- 레이아웃이 될 파일에는 공통된 마크업을 넣되, 페이지마다 달라지는 부분을 block으로 비워둡니다. block은 여러개 만들어도 됩니다.
+- {% block [블록명] %} : 블록 선언 > {% endblock %} : 블록 종료
+- block이 될 파일에서는 {% extends 경로 %} 키워드로 레이아웃 파일을 지정하고 block 부분을 넣습니다.
+- 나중에 익스프레스에서 res.render('body')를 사용해 하나의 HTML로 합친 후 렌더링 > 같은 이름의 block 부분이 서로 합쳐집니다.
+
+- ex. **BackEnd\6. 익스프레스 웹 서버 만들기\Router객체로 라우팅 분리하기\넌적스\app.js**
+- index.html와 error.html은 res.render로부터 title변수와 error변수를 받아 렌더링
+
+##### 에러 처리 미들웨어
+
+- 이제 404 응답 미들웨어와 에러 처리 미들웨어를 다음과 같이 수정하여 에러 발생시 error.html에 에러 내용을 표시
+
+```javascript
+app.use((req, res, next) => {
+  const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
+  error.status = 404;
+  next(error);
+});
+
+app.use((err, req, res, next) => {
+  res.locals.message = err.message;
+  res.locals.error = process.env.NODE_ENV !== "production" ? err : {};
+  res.status(err.status || 500);
+  res.render("error");
+});
+```
+
+- 만약 404 에러 발생시 res.locals.message는 '${req.method} ${req.url} 라우터가 없습니다'가 됩니다. next(error)에서 넘겨준 인수가 에러 처리 미들웨어의 err로 연결되기 때문
+- 에러 처리 미들웨어는 error라는 템플릿 파일을 렌더링 > 렌더링시 res.locals.message와 re.locals.error에 넣어준 값을 함께 렌더링
+- res.render에 변수를 대입하는 것 외에도, 이렇게 res.locals 속성에 값을 대입하여 템플릿 엔진에 변수를 주입 가능
+- error 개체의 스택 트레이스(error.html의 error.stack)는 시스템 환경(process.env.NODE_ENV)이 production(배포 환경)이 아닌 경우에만 표시, 배포 환경인 경우 에러 메시지만 표시 > 에러 스택 트레이스가 노출되면 보안에 취약
