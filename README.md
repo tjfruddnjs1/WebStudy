@@ -3206,3 +3206,56 @@ app.use((err, req, res, next) => {
 - 에러 처리 미들웨어는 error라는 템플릿 파일을 렌더링 > 렌더링시 res.locals.message와 re.locals.error에 넣어준 값을 함께 렌더링
 - res.render에 변수를 대입하는 것 외에도, 이렇게 res.locals 속성에 값을 대입하여 템플릿 엔진에 변수를 주입 가능
 - error 개체의 스택 트레이스(error.html의 error.stack)는 시스템 환경(process.env.NODE_ENV)이 production(배포 환경)이 아닌 경우에만 표시, 배포 환경인 경우 에러 메시지만 표시 > 에러 스택 트레이스가 노출되면 보안에 취약
+
+### MySQL
+
+- MySQL > 관계형 DB , MongoDB > NOSQL 다룰 예정
+
+#### DB란 ?
+
+- 관련성을 가지며 중복이 없는 데이터들의 집합
+- 서버에 DB를 올리면 여러 사람이 동시에 사용 가능 > 권한 부여
+
+#### DB/테이블 생성하기
+
+- create schema [데이터베이스 명] default character set utf8;
+- use [데이터베이스 명];
+- 자료형 종류 : int, varchar, tinyint, text, datetime
+- 옵션 : not null, null, unsigned, auto_increment, default
+- ex. `사용자 정보를 담고 있는 테이블`
+
+```sql
+CREATE TABLE `nodejs`.`users` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(20) NOT NULL,
+  `age` INT(10) UNSIGNED NOT NULL,
+  `married` TINYINT(1) NOT NULL,
+  `comment` TEXT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT now(),
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `name_UNIQUE` (`name` ASC) VISIBLE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_bin
+COMMENT = '사용자 정보';
+```
+
+- ex. `댓글을 저장하는 테이블`
+- 한글 뿐만이 아니라 이모티콘까지 넣고 싶다면 utf8mb4 사용
+
+```sql
+CREATE TABLE `comments` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `commenter` int NOT NULL,
+  `comment` varchar(100) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `commenter_idx` (`commenter`),
+  CONSTRAINT `commenter` FOREIGN KEY (`commenter`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='댓글'
+```
+
+- 외래키 연결
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104017661-deb55900-51fb-11eb-92af-d294176c217f.png">
+  <br>
