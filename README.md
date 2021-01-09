@@ -1,4 +1,4 @@
-d# Front-End
+# Front-End
 
 ## 실습 과정
 
