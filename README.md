@@ -3259,3 +3259,186 @@ CREATE TABLE `comments` (
   <br>
   <img src="https://user-images.githubusercontent.com/41010744/104017661-deb55900-51fb-11eb-92af-d294176c217f.png">
   <br>
+
+#### CRUD(Create, Read, Update, Delete)
+
+1. `create`
+
+- INSERT INTO [테이블명] ([칼럼1],[칼럼2],...) VALUES ([값1],[값2],...);
+
+2. `read`
+
+- SELECT [조회할칼럼] FROM [테이블명] WHERE [특정조건];
+- ORDER BY [칼럼명] [ASC|DESC] keyword : 정렬
+- LIMIT [숫자] : 조회할 로우 갯수
+- OFFSET [건너뛸숫자] : 숫자만큼 건너뛴 데이터를 조회하기 위해 > pagenation
+
+3. `update`
+
+- UPDATE [테이블명] SET [칼럼명=바꿀값] WHERE [조건];
+
+4. `delete`
+
+- DELETE FROM [테이블명] WHERE [조건];
+
+#### 시퀄라이즈 사용하기
+
+- 노드에서 MySQL 작업을 쉽게 할 수있도록 돕는 라이브러리
+- ORM(Object-Relational Mapping) : 자바스크립트 객체와 DB의 릴레이션을 매핑
+- MySQL, Maria DB,PostgreSQL, SQLite, MSSQL 등 다른 DB도 사용 가능
+- 사용 이유 : 자바스크립트 구문을 알아서 SQL로 변환 > SQL 언어를 사용하지않아도 SQL 조작 가능
+- `npm i express morgan nunjucks sequelize sequelize-cli mysql2`
+- **sequelize-cli** : 시퀄라이즈 명령어를 실행하기 위한 ㅐ키지
+- **mysql2** : MySQL과 시퀄라이즈를 이어주는 드라이버> 자체가 DB 프로그램은 X
+- 설치 완료 후 `npx sequelize init` > config, models, migrations, seeders 폴더 생성
+- models폴더 안의 index.js가 생성되었는지 확인
+- sequelize-cli가 자동으로 생성해주는 코드는 그대로 사용할 때 에러가 발생하고, 필요 없는 부분도 많으므로 다음과 같이 수정
+
+- ex. **BackEnd\7. MySQL\models\index.js**
+
+```js
+const Sequelize = require("sequelize");
+const User = require("./user");
+const Comment = require("./comment");
+
+const env = process.env.NODE_ENV || "development";
+const config = require("../config/config")[env];
+const db = {};
+
+const sequelize = new Sequelize(
+  config.database,
+  config.username,
+  config.password,
+  config
+);
+
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
+
+db.User = User;
+db.Comment = Comment;
+
+User.init(sequelize);
+Comment.init(sequelize);
+
+User.associate(db);
+Comment.associate(db);
+
+module.exports = db;
+```
+
+- Sequelize는 시퀄라이즈 패키지이자 생성자이다. config/config.json에서 DB 설정을 불러온 후 new Sequelize를 통해 MySQl 연결 객체를 생성합니다.
+- 연결 객체는 나중에 재사용 하기 위해 db.sequelize에 넣어두었습니다.
+
+##### MySQL 연결하기
+
+- 이제 시퀄라이즈를 통해 익스프레스 앱과 MySQl을 연결
+- app.js를 생성하고 익스프레스와 시퀄라이즈 연결 코드 작성
+- ex. **BackEnd\7. MySQL\app.js**
+- require('./models') == require('./models/index.js')
+- de.sequelize를 불러와 sync 메서드를 사용해 서버 실행 시 MySQL과 연동
+- 내부에 force : false 옵션이 있는데, 이 옵션을 true로 설정하면 서버 실행 시마다 테이블을 재생성합니다.
+- 테이블을 잘못 만든 경우 true로 설정
+- MySQl과 연동할 때는 `config` 폴더 안의 `config.json` 정보가 사용
+- 다음과 같이 수정하고 자동 생성한 config.json에 operatorAlizses 속성이 들어 있다면 삭제
+
+```json
+"development": {
+    "username": "root",
+    "password": "[비밀번호]",
+    "database": "[DB명]",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+```
+
+- test, production은 각각 테스트 용도, 배포 용도 이기 때문에 아직은 X
+- process.env.NODE_ENV가 development일 때 적용 (기본값 development)
+- 나중에 배포할때 process.env.NODE_ENV를 production으로 > 그 때, config/config.json을 production 수정
+- 현재까지 했을때 라우터를 만들지 않아 실제로 접속할 수는 없지만 다음과 같은 결과
+<br>
+<img src="https://user-images.githubusercontent.com/41010744/104093289-01637280-52cd-11eb-9eaa-46cf2c44b92a.png">
+<br>
+
+##### 모델 정의하기
+- MySQL에서 정의한 테이블을 시퀄라이즈에서도 정의
+- MySQl의 테이블은 시퀄라이즈의 모델과 대응
+- User와 Comment 모델을 만들어 users 테이블과 comments 테이블에 연결
+- 시퀄라이즈는 기본적으로 모델 이름은 단수형으로, 테이블 이름은 복수형으로 사용
+- ex. **BackEnd\7. MySQL\models\user.js**
+1. User 모델은 Sequelize.Model을 확장한 클래스로 선언
+- 모델은 크게 static init 메서드와 static associate로 나뉜다.
+- init 메서드에는 테이블에 대한 설정을하고, associate 메서드에는 다른 모델과의 관계 정의
+2. super.init 메서드의 첫번째 인수가 테이블 컬럼에 대한 설정이고, 두번째 인수가 테이블 자체에 대한 설정
+- 시퀄라이즈는 알아서 id를 기본 키로 연결하므로 id 컬럼은 적어줄 필요가 없고 나머지 컬럼의 스펙을 입력
+- 하지만 자료형은 MySQL과 조금 다릅니다.
+
+ MySQL | 시퀄라이즈
+------- | -------
+VARCHAR(100) | STRING(100)
+INT |INTEGER
+TINYINT | BOOLEAN
+DATETIME | DATE
+INT UNSIGNED | INTEGER.UNSIGNED
+NOT NULL | allowNull : false
+UNIQUE | unique : false
+DEFAULT now() | defaultValue : Sequelize.NOW
+
+- 두번째 인수 > 테이블 자체에 대한 설정
+- `sequelize` : static init 메서드의 매개변수와 연결되는 옵션으로 db.sequelize 객체를 넣어야 합니다. 나중에 mode/index.js와 연결
+- `timestamps` : 현재 false로 되어 있으며 이 속성 값이 true면 시퀄라이즈는 createdAt과 updatedAt 컬럼을 추가합니다. 각 로우가 생성될 때와 수정될 때의 시간이 자동으로 입력됩니다. 하지만 예제에서 직접 created_at 컬럼을 만들었기 때문에 필요하지 않습니다.
+- `underscored` : 시퀄라이즈는 기본적으로 테이블명과 컬럼명을 캐멀 케이스(ex. createdAt)로 반드는데 이를 스네이크 케이스(ex.created_at)으로 바꾸는 옵션
+- `modelName` : 모델 이름을 설정할 수있습니다. 노드 프로젝트에서 사용
+- `tableName` : 실제 Db 테이블 이름 , 기본적으로 모델 이름을 소문자 & 복수형으로 만듭니다. 모델이름이 User라면 users
+- `paranoid` : true로 설정하면 deletedAt이라는 컬럼이 생성, 로우를 삭제할 때 완전히 지워지지 않고 지운 시각이 기록 > 나중에 복원하기 위해
+- `charset과 collate` : 각각 utf8과 utf8_general_ci로 설정해야 한글이 입력, 이모티콘까지 입력할 수 있게하고 싶다면 utf8mb4와 utf8mb4_general_ci를 입력
+
+- ex. **BackEnd\7. MySQL\models\comment.js**
+- users와 테이블과 연결된 commenter 컬럼이 없는데 모델을 정의할 때 넣어도 되지만, 시퀄라이즈 자체에서 관계를 따로 정의 가능한데 이는 뒤에서확인해볼 예정
+- 이제 index.js와의 연결
+```js
+const User = require('./user');
+const Comment = require('./comment');
+
+db.User = User;
+db.Comment = Comment;
+
+User.init(sequelize);
+Comment.init(sequelize);
+
+User.associate(db);
+Comment.associate(db);
+```
+- db라는 객체에 User와 Comment 모델을 담아두고 앞으로 db 객체를 require하여 User와 Comment 모델에 접근
+- User.init과 Comment.init은 각각의 모델의 static.init 메서드를 호출
+- init이 실행되어야 테이블이 모델로 연결 
+- 다른 테이블과의 관계를 연결하는 associate 메서드도 미리 실행
+
+##### 관계 정의하기
+- users 테이블과 comments 테이블 간의 관계 정의
+- 사용자 한명은 댓글을 여러개 작성 가능 하지만 댓글 하나에 사용자가 여러명일 수는 없다 (1:N 관계)
+- 1:1 관계 > 사용자와 사용자에 대한 정보 테이블 > 사용자 한명은 자신의 정보를 담고 있는 테이블과만 관계 + 정보 테이블도 한 사람만을 가리킴
+- 다대다 관계 > 게시글 테이블과 해시태그(#) 테이블 관계 > 한 게시글에는 해시태그 여러개가 달릴 수있고, 한 해시태그도 여러 게시글에 달릴 수 있다
+- MySQL에서는 JOIN 기능으로 여러 테이블 간의 관계를 파악해 결과 도출 > 시퀄라이즈는 JOIN 기능도 알아서 구현, 대신 테이블 간에 어떤 관계가 있는지 시퀄라이즈에 알려야 한다
+
+###### 1:N
+- 시퀄라이즈에서 1:N 관계를 hasMany라는 메서드로 표현 
+-  users 테이블의 로우 하나를 불러올 때 연결된 comments 테이블의 로우들도 같이 불러올 수 있다.
+- 반대로 belongsTo메서드도 있는데 comments 테이블의 로우를 불러올 때연결된 users 테이블의 로우를 가져옵니다.
+- ex. **BackEnd\7. MySQL\models\user.js**
+```js
+static associate(db) {
+    db.User.hasMany(db.Comment, { foreignKey: 'commenter', sourceKey: 'id' });
+  }
+```
+- ex. **BackEnd\7. MySQL\models\comment.js**
+```js
+static associate(db) {
+    db.Comment.belongsTo(db.User, { foreignKey: 'commenter', targetKey: 'id' });
+  }
+```
+- 시퀄라이즈는 위에서 정의한 대로 모델 간 관계를 파악해서 Comment 모델에 외래키인 commenter 컬럼을 추가
+- Commenter 모델의 외래 키 컬럼은 commenter고, User 모델의 id 컬럼을 가리키고 있다.
+- hasMany 메서드에서는 sourceKey 속성에 id를 넣고, belongsTo 메서드에서는 targetKey 속성에 id를 넣습니다. sourceKey의 id와 targetKey의 id 모두 User 모델의 id입니다.
+- 외래키를 따로 지정하지 않는다면 이름이 모델명+기본키인 컬럼이 모델에 생성
+- ex. commenter에 외래키를 직접 넣어주지 않았다면 user(모델명)+기본키(id)가 합쳐진 UserId가 외래키로 생성
