@@ -3783,3 +3783,80 @@ app.use("/comments", commentsRouter);
   <br>
 
 - Executing으로 시작하는 SQL 구문을 보고 싶지 않다면 config/config.json의 dialect 속성 밑에 "logging" : false를 추가
+
+### NoSQL vs SQL
+
+- 몽고디비는 NoSQL(Not only SQL)의 대표적인 예시
+  SQL(MySQL) | NoSQL(몽고디비)
+  ------- | -------
+  규칙에 맞는 데이터 입력 | 자유로운 데이터 입력
+  테이블간 JOIN 지원 | 컬렉션 간 JOIN 미지원
+  안정성, 일관성 | 확장성, 가용성
+  용어(테이블, 로우, 컬럼) | 용어(컬렉션, 다큐먼트, 필드)
+
+- 먼저 noSQL에는 고정된 테이블이 없고 테이블에 상응하는 컬렉션이라는 개념 존재
+- 컬럼을 따로 정의하지 않습니다.
+- 몽고디비는 JOIN 기능이 없습니다. 흉내를 낼수는 있지만 하나의 쿼리로 여러 테이블을 합치는 작업이 항상 가능하지는 않습니다. 동시에 쿼리를 수행하는 경우 쿼리가 섞여 예상치 못한 결과를 낼 가능성도 있다
+- 이러한 단점에도 몽고디비를 사용하는 이유는 확장성/가용성 > 데이터의 일관성을 보장해주는 기능이 약한 대신 데이터를 빠르게 넣을수있고 쉽게 여러 서버에 데이터를 분산
+- 애플리케이션을 만들때 꼭 한가지 DB만 사용해야하는 것이 아니다. 많은 기업이 SQL과 NoSQL를 동시에 사용
+- ex. 항공사 예약 시스템 : 비행기 표에 관한 정보가 모든 항공사에 일관성 있게 전달되어야 하므로 예약 처리 부분의 DB는 MySQL을, 핵심 기능 외의 빅데이터/메시징/세션관리 등에는 몽고디비를 사용
+
+- `mongo` : 몽고디비 프롬프트 접속
+- `use admin` > `db.createUser({user:'이름', pwd:'비밀번호', roles:['root']})` : 관리자 계정 생성
+- `mongod --auth` : 로그인 요구 > `mongo admin -u[이름] -p[비밀번호]` : 접속
+- 컴퍼스 : 몽고디비 관리 도구 GUI
+- `use [데이터베이스 명]` : DB 생성
+- `show dbs` : 데이터베이스 목록 확인
+- `db` : 현재 사용 중인 DB 확인
+- 컬렉션(테이블)은 생성하지 않아도 다큐먼트를 넣는 순간 자동 생성 > 하지만 다음과 같이 직접 컬렉션을 생성하는 명령어 존재
+- `db.createCollection('컬렉션명')`
+- `show collections` : 컬렉션 확인
+
+#### CRUD 작업하기
+
+1. create
+
+- 컬럼을 정의하지 않아도 되므로 컬렉션에는 아무 데이터나 넣을 수 있습니다.
+- 몽고디비의 자료형은 MySQL과는 조금 다른데 기본적으로 자바스크립트 문법을 사용하므로 자바스크립트의 자료형을 따르지만 추가적인 자료형 존재
+- Binary Data, ObjectId, Int,Long, Decimal, Timestamp, JavaScript 등의 추가적인 자료형
+- 그 중 ObjectId, Binary Data, Timestamp 외에는 잘사용 X
+- ObjectId는 기본키로 쓰이는 값과 비슷한 역할, 고유한 값을 가지므로 다큐먼트 조회할때사용
+- `db.컬렉션명.save(다큐먼트)` : 다큐먼트 생성
+- ex. db.users.save({name:'zero', age:24, married:false, comment:'안녕하세요. 몽고디비 사용법을 알아봅시다', createdAt : new Date()});
+
+2. read
+
+- `db.데이터베이스명.find({})` : 컬렉션 내의 다큐먼트를 조회
+- find 메서드의 두번째 인수로 조회할 필드 > 1또는 true로 표시한 필드만 가져옵니다.
+- \_id는 기본적으로 가져오게 되어있으므로 0또는 false를 입력해 가져오지 않게 해야한다.
+- find 메서드의 첫번째 인수로 조건 기입 > 자바스크립트 객체를 사용해 명령어 쿼리 생성 > 자주 쓰이는 연산자 : $gt(초과), $gte(이상), $lt(미만), $lte(이하), $ne(같지 않음), $or(또는), $in(배열 요소 중 하나)
+- ex. age가 30초과이거나 married가 false인 다큐먼트 조회
+- db.users.find({$or: [{age:{$gt:30}}}, {married:false}]}, {\_id:0, name:1, age:1});
+- 정렬은 `sort 메서드` , -1은 내림차순, 1은 오름차순
+- 조회할 다큐먼트 갯수는 `limit 메서드`
+- 다큐먼트 갯수를 설정하면서 몇 개를 건너뛸지 설정 `skip 메서드`
+- ex. db.users.find({},{\_id:0, name:1, age:1}).sort({age:-1}).limit(1).skip(1)
+- 컴퍼스 사용시 >
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104159730-325db780-5433-11eb-9dcf-218e51fd1066.png">
+  <br>
+
+3. update
+
+- `db.데이터베이스명.update({})` : 기존 데이터 수정
+- 첫번째 객체는 수정할 다큐먼트르 ㄹ지정하는 객체고, 두번째 객체는 수정할 내용을 입력하는 객체
+- `$set` : 어떤 필드를 수정할지 정하는 연산 사용하지 않으면 다큐먼트 통째로 두번째 인수로 주정진 객체로 수정 > 일부 필드만 수정
+- 수정 성공시 첫번째 객체에 해당하는 다큐먼스 수(nMatched)와 수정된 다큐먼ㅌ 수(nModified)가 나옵니다.
+- 컴퍼스 사용시 > 연필 버튼
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104159983-a6985b00-5433-11eb-8145-b38512954795.png">
+  <br>
+
+4. delete
+
+- `db.데이터베이스명.remove({})` : 데이터 삭제
+- 삭제할 다큐먼트에 대한 정보가 담긴 객체를 첫번째 인수로 제공
+- 컴퍼스 사용시 > 쓰레기통 버튼
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104160087-dc3d4400-5433-11eb-8958-c00a8ab46dae.png">
+  <br>
