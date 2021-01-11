@@ -3874,7 +3874,7 @@ app.use("/comments", commentsRouter);
 
 - 몽고디비는 주소를 사용해 연결
 - 주소 형식 : `mongodb://[username:password@]host[:port][/[database][?options]]` > [] 부분은 있어도되고 없어도 됨
-  [index.js]()
+- [index.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/8.%20%EB%AA%BD%EA%B3%A0%EB%94%94%EB%B9%84/schemas/index.js)
 
 ```js
 const connect = () => {
@@ -3933,18 +3933,18 @@ mongoose.connection.on("disconnected", () => {
 
 ##### 쿼리 수행하기
 
-- [index.js]()
+- [index.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/8.%20%EB%AA%BD%EA%B3%A0%EB%94%94%EB%B9%84/routes/index.js)
 
 - 라우트 작성 > 먼저 GET/로 접속했을때 User.find({}) 메서드로 모든 사용자를 찾은 뒤, mongoose.html를 렌더링할때 users 변수로 넣습니다. find 메서드는 User 스키마를 require한뒤 사용 가능 > 몽고디비의 db.users.find({}) 쿼리와 동일
 - 몽구스도 기본적으로 프로미스를 지원하므로 async/await과 try/catch문을 사용해서 각각 조회 성공시와 실패시의 정보를 얻을 수 있습니다.
 - 이렇게 미리 DB에서 데이터를 조회한 후 템플릿 렌더링에 사용 가능
-- [users.js]()
+- [users.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/8.%20%EB%AA%BD%EA%B3%A0%EB%94%94%EB%B9%84/routes/users.js)
 - GET/users와 POST/users 주소로 요청이 들어왔을 때의 라우터, 각각 사용자를 조회하는 요청과 사용자를 등록하는 요청을 처리
 - GET/ 에서도 사용자 데이터를 조회했지만 GET/users에서는 데이터를 JSON 형식으로 반환한다는 점에서 차이
 - 사용자를 등록할 때는 모델.create 메서드로 저장, 정의한 스키마에 부합하지 않는 데이터를 넣었을때 몽구스가 에러 발생, \_id는 자동으로 생성
 - GET/users/:id/comments 라우터는 댓글 다큐먼트를 조회하는 라우터 , find 메서드에서는 옵션이 추가되어 있는데 먼저 댓글을 쓴 사용자의 아이디로 댓글을 조회한 뒤 populate 메서드로 관련있는 컬렉션의 다큐먼트를 불러올수 있습니다.
 - Comment 스키마 commenter 필드의 ref가 User로 되어 있으므로 알아서 users 컬렉션에서 사용자 다큐먼트를 찾아 합칩니다. commenter 필드가 사용자 다큐먼트로 치환 > commenter 필드는 ObjectId가 아니라 그 ObjectId를 가진 사용자 다큐먼트
-- [comments.js]()
+- [comments.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/8.%20%EB%AA%BD%EA%B3%A0%EB%94%94%EB%B9%84/routes/comments.js)
 - 댓글에 관련된 CRUD 작업을하는 라우터 , POST/comments, PATCH/comments/:id, DELETE/comments/:id를 등록
 - POST/comments 라우터는 다큐먼트를 등록하는 라우터 > Comment.create 메서드로 댓글을 저장 > 그후 populate 메서드로 프로미스의 결과로 반환된 comment 객체에 다른 컬렉션 다큐먼트를 불러옵니다. > path 옵션으로 어떤 필드를 합칠지 설정 > 합쳐진 결과를 클라이언트로 응답
 - PATCH/comments/:id 라우터는 다큐먼트를 수정하는 라우터입니다. 수정에는 update 메서드를 사용 > 첫번째 인수로는 어떤 다큐먼트를 수정할지를 나타낸 쿼리 객체를 제공하고 두번째 인수로는 수정할 필드와 값이 들어 있는 객체를 제공 > 시퀄라이즈 인수의 순서와 반대 > 몽고디비와 다르게 $set 연산자를 사용하지 않아도 기입한 필드만 바꿉니다.
