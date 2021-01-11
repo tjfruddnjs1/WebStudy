@@ -3860,3 +3860,97 @@ app.use("/comments", commentsRouter);
   <br>
   <img src="https://user-images.githubusercontent.com/41010744/104160087-dc3d4400-5433-11eb-8958-c00a8ab46dae.png">
   <br>
+
+#### 몽구스 사용하기
+
+- MySQL에 시퀄라이즈가 있다면 몽고디비에는 몽구스가 있습니다.
+- 몽구스는 시퀄라이즈와 달리 ODM(Object Document Mapping) > 릴레이션이 아니라 다큐먼트를 사용하기 때문
+- 몽고디비자체가 이미 자바스크립트인데 굳이 자바스크립트 객체와 매핑하는 이유는 몽고디비에 없어서 불편한 기능들을 몽구스에서 보완
+- 1. `스키마` : 몽고디비는 테이블이 없어 자유롭게 데이터를 넣을수있지만 때로는 자유로움이 불편함을 초래하는데 실수로 잘못된 자료형의 데이터를 넣을수도 있고, 다른 다큐먼트에 없는 필드의 데이터를 넣을수도 있습니다. 몽구스는 몽고디비에 데이터를 넣기 전 노드 서버에서 데이터를 한번 `필터링`
+- 2. `populate` : MySQL에 있는 `Join기능`을 보완, 관계에 있는 데이터를 쉽게 가져올수있다. 비록 쿼리 한번에 데이터를 합쳐 가져오는 것은 아니지만 직접하지 않아도되 편리
+- 3. `프로미스 & 높은 가독성`
+
+##### 몽고디비 연결하기
+
+- 몽고디비는 주소를 사용해 연결
+- 주소 형식 : `mongodb://[username:password@]host[:port][/[database][?options]]` > [] 부분은 있어도되고 없어도 됨
+  [index.js]()
+
+```js
+const connect = () => {
+  if (process.env.NODE_ENV !== 'production') {
+    mongoose.set('debug', true);
+  }
+```
+
+- 개발 환경일때만 콘솔을 통해 몽구스가 생성하는 쿼리 내용을 확인할수있게 하는 코드
+
+```js
+  mongoose.connect('mongodb://seol:q2208080@localhost:27017/admin', {
+    dbName: 'nodejs',
+    useNewUrlParser: true,
+    useCreateIndex: true,
+  }, (error) => {
+    if (error) {
+      console.log('몽고디비 연결 에러', error);
+    } else {
+      console.log('몽고디비 연결 성공');
+    }
+  });
+};
+```
+
+- 몽구스와 몽고디비를 연결하는 부분, 몽고디비 주소로 접속을 시도합니다. 접속을 시도하는 주소의 데이터베이스는 admin이지만, 실제로 사용할 데이터베이스는 nodejs이므로 두번째 인수로 dbName 옵션을 줘서 nodejs 데이터베이스를 사용하게 했습니다.
+- 마지막으로 인수로 주어진 콜백함수를 통해 연결여부를 확인
+- useNewUrlParser : true와 useCreateIndex : true는 입력하지 않아도 되지만 콘솔에 경고 메시지가 뜨므로 넣는다
+
+```js
+mongoose.connection.on("error", (error) => {
+  console.error("몽고디비 연결 에러", error);
+});
+mongoose.connection.on("disconnected", () => {
+  console.error("몽고디비 연결이 끊겼습니다. 연결을 재시도합니다.");
+  connect();
+});
+```
+
+- 몽구스 커넥션에 이벤트 리스너를 달아 에러 발생시 에러 내용을 기록하고, 연결 종료시 재연결을 시도
+
+- `스키마 생성` : Schema 생성자를 사용해 스키마를 만듭니다. 시퀄라이즈에서 모델을 정의하는 것처럼 필드를 각각 정의
+  [user.js]()
+- 몽구스는 알아서 \_id를 기본키로 생성하므로 \_id 필드는 적어줄 필요가 없습니다. 나머지 필드의 스펙만 기입
+- 몽구스 스키마에서 특이한점은 String, Number, Date, Buffer, Boolean, Mixed, ObjectId, Array를 값으로 가질수 있다는 점
+- 몽고디비의 자료형과 다르마 편의를 위해 종류수를 줄여두었습니다.
+- 마지막에는 model 메서드로 스키마와 몽고디비 컬렉션을 연결하는 모델 생성
+  [comment.js]()
+- commenter 속성을 보면 자료형이 ObjectId인데 옵션으로 ref 속성의 값이 User로 주어져 있습니다. commenter 필드에 User 스키마의 사용자 ObjectId가 들어간다는 뜻입니다. 나중에 몽구스가 Join 비슷한 기능을 할때 사용
+
+##### 컬렉션 이름 바꾸기
+
+- 몽구스는 model 메서드의 첫번째 인수로 컬렉션 이름을 만드는데 첫번째 인수가 User라면 첫글자를 소문자로 만든뒤 복수형으로 바꿔 users 컬렉션을 생성
+- 이러한 강제 개명이 싫다면 세번째 인수로 컬렉션이름 설정
+- ex. mongoose.model('User', userSchema, 'user_table') > users대신 user_table 컬렉션 생성
+
+##### 쿼리 수행하기
+
+[index.js]()
+
+- 라우트 작성 > 먼저 GET/로 접속했을때 User.find({}) 메서드로 모든 사용자를 찾은 뒤, mongoose.html를 렌더링할때 users 변수로 넣습니다. find 메서드는 User 스키마를 require한뒤 사용 가능 > 몽고디비의 db.users.find({}) 쿼리와 동일
+- 몽구스도 기본적으로 프로미스를 지원하므로 async/await과 try/catch문을 사용해서 각각 조회 성공시와 실패시의 정보를 얻을 수 있습니다.
+- 이렇게 미리 DB에서 데이터를 조회한 후 템플릿 렌더링에 사용 가능
+  [users.js]()
+- GET/users와 POST/users 주소로 요청이 들어왔을 때의 라우터, 각각 사용자를 조회하는 요청과 사용자를 등록하는 요청을 처리
+- GET/ 에서도 사용자 데이터를 조회했지만 GET/users에서는 데이터를 JSON 형식으로 반환한다는 점에서 차이
+- 사용자를 등록할 때는 모델.create 메서드로 저장, 정의한 스키마에 부합하지 않는 데이터를 넣었을때 몽구스가 에러 발생, \_id는 자동으로 생성
+- GET/users/:id/comments 라우터는 댓글 다큐먼트를 조회하는 라우터 , find 메서드에서는 옵션이 추가되어 있는데 먼저 댓글을 쓴 사용자의 아이디로 댓글을 조회한 뒤 populate 메서드로 관련있는 컬렉션의 다큐먼트를 불러올수 있습니다.
+- Comment 스키마 commenter 필드의 ref가 User로 되어 있으므로 알아서 users 컬렉션에서 사용자 다큐먼트를 찾아 합칩니다. commenter 필드가 사용자 다큐먼트로 치환 > commenter 필드는 ObjectId가 아니라 그 ObjectId를 가진 사용자 다큐먼트
+  [comments.js]()
+- 댓글에 관련된 CRUD 작업을하는 라우터 , POST/comments, PATCH/comments/:id, DELETE/comments/:id를 등록
+- POST/comments 라우터는 다큐먼트를 등록하는 라우터 > Comment.create 메서드로 댓글을 저장 > 그후 populate 메서드로 프로미스의 결과로 반환된 comment 객체에 다른 컬렉션 다큐먼트를 불러옵니다. > path 옵션으로 어떤 필드를 합칠지 설정 > 합쳐진 결과를 클라이언트로 응답
+- PATCH/comments/:id 라우터는 다큐먼트를 수정하는 라우터입니다. 수정에는 update 메서드를 사용 > 첫번째 인수로는 어떤 다큐먼트를 수정할지를 나타낸 쿼리 객체를 제공하고 두번째 인수로는 수정할 필드와 값이 들어 있는 객체를 제공 > 시퀄라이즈 인수의 순서와 반대 > 몽고디비와 다르게 $set 연산자를 사용하지 않아도 기입한 필드만 바꿉니다.
+- DELETE/comments/:id 라우터는 다큐먼트를 삭제 > remove 메서드를 사용하여 삭제 , remove 메서드에는 어떤 다큐먼트를 삭제할지에 대한 조건을 첫번째 인수
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104192407-20dfd400-5462-11eb-9f97-e58752bd6c21.png">
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104192465-335a0d80-5462-11eb-9259-23a33d1a6578.png">
+  <br>
