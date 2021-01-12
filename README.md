@@ -4282,7 +4282,7 @@ app.use("/auth", authRouter);
 - 이미지를 어떻게 저장할 것인지는 서비스의 특성에 따라 달라지는데, NodeBird 서비스는 input 태그를 통해 이미지를 선택할 때 바로 업로드를 진행하고, 업로드된 사진 주소를 다시 클라이언트에 알릴 것입니다.
 - 게시글을 저장할때는 데이터베이스에 직접 이미지 데이터를 넣는 대신 이미지 경로만 저장합니다. 이미지는 서버 디스크에 저장됩니다.
 
-1. [routes/post.js]()
+1. [routes/post.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/routes/post.js)
 
 - multer 부분은 6.2.7절의 코드와 거의 유사합니다. `POST/post/img 라우터와 POST/post 라우터`를 만듭니다. app.use('/post')를 할 것이므로 앞에 /post 경로가 붙었습니다.
 - `POST/post/img 라우터`에서는 `이미지 하나를 업로드받은 뒤 이미지의 저장 경로를 클라이언트로 응답`합니다. static 미들웨어가 /img 경로의 정적 파일을 제공하므로 클라이언트에서 업로드한 이미지에 접근할 수 있습니다.
@@ -4324,7 +4324,7 @@ router.get("/", async (req, res, next) => {
 #### -5. 프로젝트 마무리하기
 
 - 팔로잉 기능과 해시태그 검색 기능 추가
-- 다른 사용자를 팔로우하는 기능 > [routes/user.js]()
+- 다른 사용자를 팔로우하는 기능 > [routes/user.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/routes/user.js)
 - `POST/user/:id/follow 라우터` : :id부분이 req.params.id가 됩니다. 먼저 팔로우할 사용자를 DB에서 조회한후, 시퀄라이즈를 추가한 addFollowing 메서드로 현재 로그인한 사용자와의 관계를 지정합니다.
 - 팔로잉 관게가 생겼으므로 `req.user`에도 팔로워와 팔로잉 목록을 저장합니다. 앞으로 사용자 정보를 불러올 때는 팔로워와 팔로잉 목록도 같이 불러오게 됩니다. `req.user를 바꾸려면 deserializeUser를 조작`해야합니다.
 
@@ -4393,29 +4393,29 @@ router.get("/hashtag", async (req, res, next) => {
 
 ### 9장 실습 정리
 
-- [package.json]()
+- npm 설정 : [package.json](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/package.json)
 
 #### 결과물 사진
 
-1. 메인 화면
+1. **메인 화면**
    <br>
    <img src="https://user-images.githubusercontent.com/41010744/104285601-38b56780-54f7-11eb-8ab3-70d60a2ea812.png">
    <br>
 
-2. 회원 가입
+2. **회원 가입**
    <br>
    <img src="https://user-images.githubusercontent.com/41010744/104285756-67334280-54f7-11eb-8cd9-d397ad3a3de8.png">
    <br>
 
-3. 로그인 상태 & 팔로우/팔로잉 기능 & 이미지 업로드
+3. **로그인 상태 & 팔로우/팔로잉 기능 & 이미지 업로드**
    <br>
    <img src="https://user-images.githubusercontent.com/41010744/104287038-39e79400-54f9-11eb-90b2-a58b82b14c2b.png">
    <br>
-4. 데이터베이스
+4. **데이터베이스**
    <br>
    <img src="https://user-images.githubusercontent.com/41010744/104287216-7c10d580-54f9-11eb-9050-daa33216956b.png">
    <br>
-5. 해시태그 검색
+5. **해시태그 검색**
    <br>
    <img src="https://user-images.githubusercontent.com/41010744/104287480-d90c8b80-54f9-11eb-8095-b3738416708f.png">
    <br>
