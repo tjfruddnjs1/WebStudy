@@ -4004,3 +4004,38 @@ mongoose.connection.on("disconnected", () => {
 6. `error.html`
 
 - 서버에 에러가 발생했을 때 에러 내역을 보여줍니다. 에러는 콘솔로 봐도 되지만 브라우저 화면으로 보면 더 편리 > 단 배포시에는 에러 내용을 보여주지 않는게 보안상 좋습니다.
+
+#### -2. 데이터베이스 세팅하기
+
+- MySQL과 시퀄라이즈로 데이터베이스 설정
+- 로그인 > 사용자 테이블 , 게시글 저장 > 게시글 테이블, 해시태그 > 해시태그 테이블
+- `models` 폴더 안에 [user.js](), [post.js](), [hashtag.js]() 생성
+
+1. `user.js`
+
+- 사용자 정보를 저장하는 모델 : 이메일, 닉네임, 비밀번호를 저장하고 SNS로그인을 했을 경우 provider와 snsId를 저장
+- provider가 local이면 로컬 로그인을 한 것이고, kakao면 카카오 로그인
+- 기본적으로 로컬 로그인이라 가정하여 defaultValue를 local로 설정
+- 테이블 옵션으로 timestamps와 paranoid가 true로 주어졌으므로 createdAt, updatedAt, deletedAt 칼럼도 생성
+
+2. `post.js`
+
+- 게시글 모델은 게시글 내용과 이미지 경로를 저장, 게시글 등록자의 아이디를 담은 컬럼은 나중에 관계를 설정할 때 시퀄라이즈가 알아서 생성
+
+3. `hashtag.js`
+
+- 해시태그 모델은 태그 이름을 저장, 해시태그 모델을 따로 두는 것은 나중에 태그로 검색하기 위해
+- 이제 생성한 모델들을 시퀄라이즈에 등록합니다. [models/index.js]()에는 시퀄라이즈가 자동으로 생성한 코드들이 들어 있을 것입니다. 그것을 링크와 같이 변경
+
+- **User 모델과 Post 모델은 1:N 관계에 있으므로 hasMany로 연결**
+- **같은 테이블 간 N:M관계 존재** > 팔로잉 기능 > 사용자 한명이 팔로워 여러명 가질수도 있고, 한 사람이 여러명을 팔로잉 가능 > through 옵션을 사용해 생성할 모델 이름을 Follow로 설정
+- Follow 모델에서 사용자 아이디를 저장하는 컬럼 이름이 둘다 UserId면 누가 팔로워고 누가 팔로잉 중인지 구분되지 않으므로 따로 설정 > foreignKey 옵션에 각각 followerId, followingId를 넣어 두사용자 아이디를 구별
+- 같은 테이블 간의 N:M 관계에서는 as 옵션도 넣어야 하는데 둘다 User 모델이라 구분되지 않기 때문입니다. 주의할 점은 as는 foreignKey와 반대되는 모델을 가리킴
+- foreginKey가 followerId면 as는 Followings고, followingId면 as는 Follwers여야 한다. > 팔로워를 찾으려면 팔로잉하는 사람의 아이디를 찾아야 하는 것이라 생각
+- as에 특정한 이름을 지정했으니 users.getFollowers, user.getFollowings와 같은 관계 메서드를 사용 가능
+- include 시 as에 같은 값을 넣으면 관계 쿼리가 작동
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104269107-d51c4180-54d8-11eb-9c60-e8fa0b0b3547.png">
+  <br>
+- 시퀄라이즈는 [config.json]()을 바탕으로 자동으로 데이터베이스 생성 > `npx sequelize db:create` > 생성한 디비 바탕으로 모델을 서버와 연결 > app.js
+- `npm start` > 시퀄라이즈는 테이블 생성 쿼리문에 `if not exists`를 넣어주기 때문에 테이블이 없을 때 테이블 자동 생성
