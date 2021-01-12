@@ -3954,3 +3954,53 @@ mongoose.connection.on("disconnected", () => {
   <br>
   <img src="https://user-images.githubusercontent.com/41010744/104192465-335a0d80-5462-11eb-9259-23a33d1a6578.png">
   <br>
+
+### 9. 익스프레스로 SNS 서비스 만들기
+
+- `로그인, 이미지 업로드, 게시글 작성, 해시태그 검색, 팔로잉` 등의 기능이 있는 SNS 서비스인 NodeBird App 만들기
+- 노드, 익스프레스 그리고 npm에 있는 오픈 소스와 함께라면 복잡할 것 같은 SNS 서비스도 금방 제작
+
+#### -1. 프로젝트 구조 갖추기
+
+- SNS 중 140자의 단문 메시지를 보내고 사람들이 메시지의 내용을 공유할 수 있는 서비스 존재
+- [package.json]()
+- 시퀄라이즈 설치 > 사용자와 게시물 가느 게시물과 해시태그 간의 관계가 중요하기 때문에 NoSQL 대신 MySQL 사용
+- 1. `npm i sequelize mysql2 sequelize-cli` > node_modules & package-lock.json 생성
+- 2. `npx sequelize init` > config, migrations, models, seeders 폴더 생성 > npx 사용 이유 : 전역 설치(npm i -g)를 피하기 위해
+- 템플릿 파일을 넣을 `views` 폴더, 라우터를 넣을 `routes` 폴더, 정적 파일을 넣을 `public` 폴더 생성, 9.3절에서 설명할 passport 패키지를 위한 `passport` 폴더
+- 익스프레스 서버 코드가 담길 `app.js`와 설정값들을 담을 `.env`파일
+- 3. `npm i express cookie-parser express-session morgan multer dotenv nunjucks`
+- 4. `npm i -D nodemon`
+- [app.js]() : Express Code > 라우터로는 pageRouter만 있지만, 추후 추가 예정
+- 하드 코딩된 비밀번호가 유일하게 남아 있는 파일이 있습니다. 시퀄라이즈 설정을 담아둔 config.json이며 JSON 파일이라 process.env를 사용할 수 없습니다. 시퀄라이즈의 비밀번호를 숨기는 방법은 15.1.2절
+- 기본적인 라우터와 템플릿 엔진 생성
+- routes 폴더 안 [page.js](), views 폴더 안 [layout.html](), [main.html](), [profile.html](), [join.html](), [error.html]() 생성 & 약간의 디자인을 위해 [main.css]()을 public 폴더 안에 생성
+
+1. `page.js`
+
+- GET/profile, GET/join, GET/ 까지 총 세개의 페이지로 구성
+- router.use로 라우터 용 미들웨어를 만들어 템플릿 엔진에서 사용할 user, followingCount, followerCount, followerIdList 변수를 res.locals로 설정
+- 지금은 각각 null,0,0,[] 이지만 나중에 값을 넣을 예정
+- **res.locals**로 값을 설정하는 이유는 변수들을 모든 템플릿 엔진에서 공통으로 사용하기 때문
+- render안의 twits도 지금은 빈배열이지만 나중에 값을 넣습니다.
+
+2. `layout.html`
+
+- if문을 중점적으로 보면됩니다. 렌더링할때 user가 존재하면 사용자 정보와 팔로잉, 팔로워 수를 보여주고 존재하지 않으면 로그인 메뉴를 보여줍니다.
+
+3. `main.html`
+
+- user 변수가 존재할 때 게시글 업로드 폼을 보여줍니다. for문도 추가하여 렌더링 시 twits 배열 안의 요소들을 읽어 게시글로 만듭니다. 지금은 빈 배열이지만 나중에 twits에 게시글 데이터를 넣으면 됩니다.
+- **if not followerIdList.includes(twit.User.id) and twit.User.id !== user.id**는 나의 팔로워 아이디 목록에 게시글 작성자의 아이디가 없으면 팔로우 버튼을 보여주기 위한 구문 + 게시글 작성자가 나인 경우 나를 팔로우할 수 없게 했습니다. if not과 and를 써서 여러가지 조건들을 조합
+
+4. `profile.html`
+
+- 사용자의 팔로워와 사용자가 팔로잉 중인 목록을 보여줍니다.
+
+5. `join.html`
+
+- 회원가입하는 폼을 보여줍니다.
+
+6. `error.html`
+
+- 서버에 에러가 발생했을 때 에러 내역을 보여줍니다. 에러는 콘솔로 봐도 되지만 브라우저 화면으로 보면 더 편리 > 단 배포시에는 에러 내용을 보여주지 않는게 보안상 좋습니다.
