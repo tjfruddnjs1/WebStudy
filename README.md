@@ -4320,3 +4320,102 @@ router.get("/", async (req, res, next) => {
 ```
 
 - 먼저 데이터베이스에서 게시글을 조회한 후 결과를 twits에 넣어 렌더링 > 조회할때 게시글 작성자의 아이디와 닉네임을 JOIN해서 제공하고, 게시글의 순서는 최신순으로 정렬
+
+#### -5. 프로젝트 마무리하기
+
+- 팔로잉 기능과 해시태그 검색 기능 추가
+- 다른 사용자를 팔로우하는 기능 > [routes/user.js]()
+- `POST/user/:id/follow 라우터` : :id부분이 req.params.id가 됩니다. 먼저 팔로우할 사용자를 DB에서 조회한후, 시퀄라이즈를 추가한 addFollowing 메서드로 현재 로그인한 사용자와의 관계를 지정합니다.
+- 팔로잉 관게가 생겼으므로 `req.user`에도 팔로워와 팔로잉 목록을 저장합니다. 앞으로 사용자 정보를 불러올 때는 팔로워와 팔로잉 목록도 같이 불러오게 됩니다. `req.user를 바꾸려면 deserializeUser를 조작`해야합니다.
+
+```js
+User.findOne({
+  where: { id },
+  include: [
+    {
+      model: User,
+      attributes: ["id", "nick"],
+      as: "Followers",
+    },
+    {
+      model: User,
+      attributes: ["id", "nick"],
+      as: "Followings",
+    },
+  ],
+});
+```
+
+- 세션에 저장된 아이디로 사용자 정보를 조회할때 팔로잉 목록과 팔로워 목록도 같이 조회
+- include에서 계속 attributes를 지정하고 있는데, 이는 실수로 비밀번호를 조회하는 것을 방지하기 위해서 입니다.
+
+```js
+res.locals.followerCount = req.user ? req.user.Followers.length : 0;
+res.locals.followingCount = req.user ? req.user.Followings.length : 0;
+res.locals.followerIdList = req.user
+  ? req.user.Followings.map((f) => f.id)
+  : [];
+```
+
+- 팔로잉/팔로워 숫자와 팔로우 버튼을 표시하기 위해 **routes/page.js**를 수정
+- 로그인한 경우 req.user가 존재하므로 팔로잉/팔로워 수와 `팔로워 아이디 리스트`를 넣습니다. 팔로워 아이디 리스트를 넣는 이유는 `팔로워 아이디 리스트에 게시글 작성자의 아이디가 존재하지 않으면 팔로우 버튼을 보여주기 위해`서입니다.
+
+```js
+const { Post, User, Hashtag } = require("../models");
+//...
+router.get("/hashtag", async (req, res, next) => {
+  const query = req.query.hashtag;
+  if (!query) {
+    return res.redirect("/");
+  }
+  try {
+    const hashtag = await Hashtag.findOne({ where: { title: query } });
+    let posts = [];
+    if (hashtag) {
+      posts = await hashtag.getPosts({ include: [{ model: User }] });
+    }
+
+    return res.render("main", {
+      title: `${query} | NodeBird`,
+      twits: posts,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+```
+
+- 해시태그로 조회하는 GET/hashtag(**routes/page.js**)라우터 입니다. 쿼리스트링으로 해시태그 이름을 받고 해시태그 값이 없는 경우 메인 페이지로 돌려보냅니다.
+- 데이터베이스에서 해당 해시태그를 검색한 후, 해시태그가 있다면 시퀄라이즈에서 제공하는 `getPosts 메서드`로 모든 게시글을 가져옵니다. 가져올때는 작성자 정보를 합칩니다. 가져올때는 작성자 정보를 합칩니다. 조회후 메인 페이지를 렌더링하면서 전체 게시글 대신 조회된 게시글만 twits에 넣어 렌더링합니다.
+- 마지막으로 **routes/post.js와 routes/user.js**를 **app.js**에 연결합니다. 업로드한 이미지를 제공할 라우터`(/img)도 express.static 미들웨어로 uploads 폴더와 연결`합니다.
+- express.static을 여러번 쓸수있다 이제 uploads 폴더 내 사진들이 /img 주소로 제공됩니다.
+
+### 9장 실습 정리
+
+- [package.json]()
+
+#### 결과물 사진
+
+1. 메인 화면
+   <br>
+   <img src="https://user-images.githubusercontent.com/41010744/104285601-38b56780-54f7-11eb-8ab3-70d60a2ea812.png">
+   <br>
+
+2. 회원 가입
+   <br>
+   <img src="https://user-images.githubusercontent.com/41010744/104285756-67334280-54f7-11eb-8cd9-d397ad3a3de8.png">
+   <br>
+
+3. 로그인 상태 & 팔로우/팔로잉 기능 & 이미지 업로드
+   <br>
+   <img src="https://user-images.githubusercontent.com/41010744/104287038-39e79400-54f9-11eb-90b2-a58b82b14c2b.png">
+   <br>
+4. 데이터베이스
+   <br>
+   <img src="https://user-images.githubusercontent.com/41010744/104287216-7c10d580-54f9-11eb-9050-daa33216956b.png">
+   <br>
+5. 해시태그 검색
+   <br>
+   <img src="https://user-images.githubusercontent.com/41010744/104287480-d90c8b80-54f9-11eb-8095-b3738416708f.png">
+   <br>
