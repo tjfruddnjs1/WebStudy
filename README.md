@@ -4061,7 +4061,7 @@ app.use(passport.session());
 - require('./passport')는 require('./passport/index.js')와 같습니다. 폴더 내의 index.js 파일은 require 시 이름을 생략할 수 있습니다.
 - `passport.initialize` 미들웨어는 요청(req 객체)에 passport 설정을 심고, `passport.session` 미들웨어는 req.session 객체에 passport 정보를 저장합니다.
 - req.session 객체는 express-session에서 생성하는 것이므로 passport 미들웨어는 express-session 미들웨어보다 뒤에 연결해야 합니다.
-- passport 폴더 내부 [index.js]() 파일을 만들고 Passport 관련 코드를 작성
+- passport 폴더 내부 [index.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/passport/index.js) 파일을 만들고 Passport 관련 코드를 작성
 - 모듈 내부를 보면 passport.serializeUser와 passport.deserializeUser가 존재
 - `serializeUser`는 로그인시 실행되며, req.session(세션)객체에 어떤 데이터를 저장할지 정하는 메서드 > 매개변수로 user를 받고 나서, done함수에 두번째 인수로 user.id를 넘기고 있습니다. 매개변수 user가 어디서 오는지는 나중에 설명 > 현재는 그냥 사용자 정보가 들어있다고 생각
 - done 함수의 첫번째 인수는 에러 발생시 사용하는 것이고, 두번째 인수에는 저장하고 싶은 데이터를 넣습니다. 로그인시 사용자 데이터를 세션에 저장하는데 세션에 사용자 정보를 모두 저장하면 세션의 용량이 커지고 데이터 일관성 문제가 발생하므로 사용자의 아이디만 저장하라고 명령
@@ -4095,14 +4095,14 @@ app.use(passport.session());
 - Passport에서 이를 구현하려면 `passport-local` 모듈이 필요
 - 회원가입, 로그인, 로그아웃 라우터를 생성 > 접근 조건 : 로그인한 사용자는 회원가입과 로그인 라우터에 접근하면 X > 이미 로그인했으니
 - 마찬가지로 로그인하지 않은 사용자는 로그아웃 라우터에 접근하면 X
-- 따라서 라우터에 접근권한을 제어하는 미들웨어가 필요 > `req.isAuthenticated` [middlewares.js]()
+- 따라서 라우터에 접근권한을 제어하는 미들웨어가 필요 > `req.isAuthenticated` [middlewares.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/routes/middlewares.js)
 - Passport는 req 객체에 isAuthenticated 메서드를 추가 > 로그인 중이면 req.isAuthenticated가 true고 그렇지 않으면 false입니다 > 로그인 여부 판단
 - 라우터들 중 로그아웃 라우터나 이미지 업로드 라우터 등은 로그인한 사람만 접근 가능 & 회원가입, 로그인 라우터는 로그인하지 않은 사람만 접근
 - **page.js** : 로그인 여부 판단
 - 자신의 프로필은 로그인을 해야 볼수있으므로 isLoggedIn 미들웨어를 사용, 회원가입 페이지는 로그인을 하지 않은 사람에게 보여야하므로 isNotLoggedIn 미들웨어 사용
 - 로그인 여부로만 미들웨어를 만들수있는 것이아니라 팔로잉 여부, 관리자 여부 등의 미들웨어를 만들수도 있으므로 `res.locals.user 속성에 re.user`를 넣어 넌적스에서 user객체를 통해 사용자 정보에 접근 가능
 
-- [auth.js]() : 회원가입, 로그인, 로그아웃 라우터를 작성
+- [auth.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/routes/auth.js) : 회원가입, 로그인, 로그아웃 라우터를 작성
 
 ```js
 router.post("/join", isNotLoggedIn, async (req, res, next) => {
@@ -4163,7 +4163,7 @@ router.get("/logout", isLoggedIn, (req, res) => {
 
 - **나중에 app.js와 연결할 때 /auth 접두사를 붙일 것이므로 라우터의 주소는 각각 /auth/join, /auth/login, /auth/logout이 됩니다.**
 
-- [localStrategy.js]() : 로그인 전략을 구현 > passport-local 모듈에서 Strategy 생성자를 불러와 그안에 전략을 구현
+- [localStrategy.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/passport/localStrategy.js) : 로그인 전략을 구현 > passport-local 모듈에서 Strategy 생성자를 불러와 그안에 전략을 구현
 
 ```js
  passport.use(new LocalStrategy({
@@ -4203,7 +4203,7 @@ router.get("/logout", isLoggedIn, (req, res) => {
 
 - 로그인 인증 과정을 카카오에 맡기는 것 > 번거롭게 회원가입하지 않아도 되므로 편리
 - 해야할 작업 : 처음 로그인할때 회원가입 처리 > 두번째 로그인부터는 로그인 처리 > 다소 복잡
-- [kakaoStrategy.js]()
+- [kakaoStrategy.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/passport/kakaoStrategy.js)
 
 ```js
 passport.use(new KakaoStrategy({
