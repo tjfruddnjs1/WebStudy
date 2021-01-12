@@ -3963,7 +3963,7 @@ mongoose.connection.on("disconnected", () => {
 #### -1. 프로젝트 구조 갖추기
 
 - SNS 중 140자의 단문 메시지를 보내고 사람들이 메시지의 내용을 공유할 수 있는 서비스 존재
-- [package.json]()
+- [package.json](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/package.json)
 - 시퀄라이즈 설치 > 사용자와 게시물 가느 게시물과 해시태그 간의 관계가 중요하기 때문에 NoSQL 대신 MySQL 사용
 - 1. `npm i sequelize mysql2 sequelize-cli` > node_modules & package-lock.json 생성
 - 2. `npx sequelize init` > config, migrations, models, seeders 폴더 생성 > npx 사용 이유 : 전역 설치(npm i -g)를 피하기 위해
@@ -3971,10 +3971,10 @@ mongoose.connection.on("disconnected", () => {
 - 익스프레스 서버 코드가 담길 `app.js`와 설정값들을 담을 `.env`파일
 - 3. `npm i express cookie-parser express-session morgan multer dotenv nunjucks`
 - 4. `npm i -D nodemon`
-- [app.js]() : Express Code > 라우터로는 pageRouter만 있지만, 추후 추가 예정
+- [app.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/app.js) : Express Code > 라우터로는 pageRouter만 있지만, 추후 추가 예정
 - 하드 코딩된 비밀번호가 유일하게 남아 있는 파일이 있습니다. 시퀄라이즈 설정을 담아둔 config.json이며 JSON 파일이라 process.env를 사용할 수 없습니다. 시퀄라이즈의 비밀번호를 숨기는 방법은 15.1.2절
 - 기본적인 라우터와 템플릿 엔진 생성
-- routes 폴더 안 [page.js](), views 폴더 안 [layout.html](), [main.html](), [profile.html](), [join.html](), [error.html]() 생성 & 약간의 디자인을 위해 [main.css]()을 public 폴더 안에 생성
+- routes 폴더 안 [page.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/routes/page.js), views 폴더 안 [layout.html](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/views/layout.html), [main.html](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/views/main.html), [profile.html](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/views/profile.html), [join.html](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/views/join.html), [error.html](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/views/error.html) 생성 & 약간의 디자인을 위해 [main.css](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/public/main.css)을 public 폴더 안에 생성
 
 1. `page.js`
 
