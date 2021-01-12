@@ -4039,3 +4039,239 @@ mongoose.connection.on("disconnected", () => {
   <br>
 - 시퀄라이즈는 [config.json](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/config/config.json)을 바탕으로 자동으로 데이터베이스 생성 > `npx sequelize db:create` > 생성한 디비 바탕으로 모델을 서버와 연결 > app.js
 - `npm start` > 시퀄라이즈는 테이블 생성 쿼리문에 `if not exists`를 넣어주기 때문에 테이블이 없을 때 테이블 자동 생성
+
+#### -3. Passport 모듈로 로그인 구현하기
+
+- SNS 서비스이므로 로그인을 필요로하는데 회원가입과 로그인을 직접 구현할수도 있지만 세션과 쿠키 처리 등 복잡한 작업이 많으므로 검증된 모듈을 사용하는 것이 바람직
+- 서비스에 로그인할 때 아이디와 비밀번호를 사용하지 않고 구글, 페이스북, 카카오톡 같은 기존 SNS 서비스 계정으로 로그인하는데 이또한 Passport를 사용하여 해결
+- `npm i passport passport-local passport-kakao bcrypt` : passport 관련 패키지 설치
+- **app.js**와의 passport 연결
+
+```js
+const passport = require("passport");
+//...
+const passportConfig = require("./passport");
+//...
+passportConfig(); // 패스포트 설정
+//...
+app.use(passport.initialize());
+app.use(passport.session());
+```
+
+- require('./passport')는 require('./passport/index.js')와 같습니다. 폴더 내의 index.js 파일은 require 시 이름을 생략할 수 있습니다.
+- `passport.initialize` 미들웨어는 요청(req 객체)에 passport 설정을 심고, `passport.session` 미들웨어는 req.session 객체에 passport 정보를 저장합니다.
+- req.session 객체는 express-session에서 생성하는 것이므로 passport 미들웨어는 express-session 미들웨어보다 뒤에 연결해야 합니다.
+- passport 폴더 내부 [index.js]() 파일을 만들고 Passport 관련 코드를 작성
+- 모듈 내부를 보면 passport.serializeUser와 passport.deserializeUser가 존재
+- `serializeUser`는 로그인시 실행되며, req.session(세션)객체에 어떤 데이터를 저장할지 정하는 메서드 > 매개변수로 user를 받고 나서, done함수에 두번째 인수로 user.id를 넘기고 있습니다. 매개변수 user가 어디서 오는지는 나중에 설명 > 현재는 그냥 사용자 정보가 들어있다고 생각
+- done 함수의 첫번째 인수는 에러 발생시 사용하는 것이고, 두번째 인수에는 저장하고 싶은 데이터를 넣습니다. 로그인시 사용자 데이터를 세션에 저장하는데 세션에 사용자 정보를 모두 저장하면 세션의 용량이 커지고 데이터 일관성 문제가 발생하므로 사용자의 아이디만 저장하라고 명령
+- serializeUser가 로그인 시에만 실행된다면 `deserializeUser`는 매 요청시 실행
+- passport.session 미들웨어가 이 메서드를 호출 serializeUser의 done의 두번째 인수로 넣었던 데이터가 deserializeUser의 매개변수 > 여기서는 사용자의 아이디
+- 조금전 serializeUser에서 세션에 저장했던 아이디를 받아 DB 사용자 정보를 조회합니다. 조회한 정보를 `req.user`에 저장하므로 앞으로 `req.user`를 통해 로그인한 사용자 정보를 가져올수 있습니다.
+- 즉, serializeUser는 사용자 정보 객체를 세션에 아이디로 저장하는 것이고, deserializeUser는 세션에 저장한 아이디를 통해 사용자 정보 객체를 불러옵니다. 세션에 불필요한 데이터를 담아두지 않기 위한 과정
+- **전체 과정**
+
+1. 라우터를 통해 로그인 요청이 들어옴
+2. 라우터에서 passport.authenticate 메서드 호출
+3. 로그인 전략 수행
+4. 로그인 성공 시 사용자 정보 객체와 함께 req.login 호출
+5. req.login 메서드가 passport.serializeUser 호출
+6. req.session에 사용자 아이디만 저장
+7. 로그인 완료
+
+- 아직 1~4번은 구현하지 않았습니다. 로컬 로그인을 구현하면서 상응하는 코드를 보게될 것입니다. 로그인 이후는,
+
+1. 요청이 들어옴
+2. 라우터에 요청이 도달하기전에 passport.session 미들웨어가 passport.deserializeUser 메서드 호출
+3. req.session에 저장된 아이디로 DB에서 사용자 조회
+4. 조회된 사용자 정보를 req.user에 저장
+5. 라우터에서 req.user 객체 사용 가능
+
+- passport/index.js의 localStrategy와 kakaoStrategy 파일은 각각 로컬 로그인과 카카오 로그인 전략에 대한 파일 > Passport는 로그인 시의 동작을 `전략(strategy)`로 표현
+
+##### 로컬 로그인 구현하기
+
+- 로컬 로그인 : 다른 SNS 서비스를 통해 로그인하지 않고 자체적으로 회원가입 후 로그인하는 것을 의미
+- Passport에서 이를 구현하려면 `passport-local` 모듈이 필요
+- 회원가입, 로그인, 로그아웃 라우터를 생성 > 접근 조건 : 로그인한 사용자는 회원가입과 로그인 라우터에 접근하면 X > 이미 로그인했으니
+- 마찬가지로 로그인하지 않은 사용자는 로그아웃 라우터에 접근하면 X
+- 따라서 라우터에 접근권한을 제어하는 미들웨어가 필요 > `req.isAuthenticated` [middlewares.js]()
+- Passport는 req 객체에 isAuthenticated 메서드를 추가 > 로그인 중이면 req.isAuthenticated가 true고 그렇지 않으면 false입니다 > 로그인 여부 판단
+- 라우터들 중 로그아웃 라우터나 이미지 업로드 라우터 등은 로그인한 사람만 접근 가능 & 회원가입, 로그인 라우터는 로그인하지 않은 사람만 접근
+- **page.js** : 로그인 여부 판단
+- 자신의 프로필은 로그인을 해야 볼수있으므로 isLoggedIn 미들웨어를 사용, 회원가입 페이지는 로그인을 하지 않은 사람에게 보여야하므로 isNotLoggedIn 미들웨어 사용
+- 로그인 여부로만 미들웨어를 만들수있는 것이아니라 팔로잉 여부, 관리자 여부 등의 미들웨어를 만들수도 있으므로 `res.locals.user 속성에 re.user`를 넣어 넌적스에서 user객체를 통해 사용자 정보에 접근 가능
+
+- [auth.js]() : 회원가입, 로그인, 로그아웃 라우터를 작성
+
+```js
+router.post("/join", isNotLoggedIn, async (req, res, next) => {
+  const { email, nick, password } = req.body;
+  try {
+    const exUser = await User.findOne({ where: { email } });
+    if (exUser) {
+      return res.redirect("/join?error=exist");
+    }
+    const hash = await bcrypt.hash(password, 12);
+    await User.create({
+      email,
+      nick,
+      password: hash,
+    });
+    return res.redirect("/");
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+```
+
+- 회원가입 라우터 : 기존 같은 이메일로 가입한 사용자가 있는지 조회한 뒤, 있다면 회원가입 페이지로 되돌려보냅니다. 단 주소 뒤에 에러를 쿼리스트링으로 표시합니다. 같은 이메일로 가입한 사용자가 없다면 비밀번호를 암호화하고 사용자 정보를 생성합니다. 회원가입시 비밀번호는 `bcrypt`모듈을 사용하여 암호화, 두번째 인수는 반복횟수기능을하는데 12이상을 추천 31까지 사용가능
+
+```js
+router.post("/login", isNotLoggedIn, (req, res, next) => {
+  passport.authenticate("local", (authError, user, info) => {
+    if (authError) {
+      console.error(authError);
+      return next(authError);
+    }
+    if (!user) {
+      return res.redirect(`/?loginError=${info.message}`);
+    }
+    return req.login(user, (loginError) => {
+      if (loginError) {
+        console.error(loginError);
+        return next(loginError);
+      }
+      return res.redirect("/");
+    });
+  })(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
+});
+```
+
+- 로그인 라우터 : 로그인 요청이 들어오면 passport.authenticate('local') 미들웨어가 로컬 로그인 전략을 수행, 미들웨어인데 라우터 미들웨어 안에들어 있습니다. 미들웨어에 사용자 정의 기능을 추가하고 싶으면 이렇게 가능하다. 이럴 때는 내부 미들웨어에 (req,res,next)인수로 제공해서 호출하면 됩니다.
+
+```js
+router.get("/logout", isLoggedIn, (req, res) => {
+  req.logout();
+  req.session.destroy();
+  res.redirect("/");
+});
+```
+
+- 로그아웃 라우터 > req.logout 메서드는 req.user 객체를 제거하고, req.session.destroy는 req.session 객체의 내용을 제거 , 세션 정보를 지운 후 메인페이지로 되돌아갑니다.
+
+- **나중에 app.js와 연결할 때 /auth 접두사를 붙일 것이므로 라우터의 주소는 각각 /auth/join, /auth/login, /auth/logout이 됩니다.**
+
+- [localStrategy.js]() : 로그인 전략을 구현 > passport-local 모듈에서 Strategy 생성자를 불러와 그안에 전략을 구현
+
+```js
+ passport.use(new LocalStrategy({
+    usernameField: 'email',
+    passwordField: 'password',
+  },
+```
+
+- LocalStrategy 생성자의 첫번째 인수로 주어진 객체는 전략에 관한 설정을 하는 곳, `usernameField와 passwordField에는 일치하는 로그인 라우터의 req.body 속성명`을 적으면 됩니다. req.body.email에 이메일 주소가, req.body.password에 비밀번호가 담겨 들어오므로 email과 password를 각각 넣었습니다.
+
+```js
+ async (email, password, done) => {
+    try {
+      const exUser = await User.findOne({ where: { email } });
+      if (exUser) {
+        const result = await bcrypt.compare(password, exUser.password);
+        if (result) {
+          done(null, exUser);
+        } else {
+          done(null, false, { message: '비밀번호가 일치하지 않습니다.' });
+        }
+      } else {
+        done(null, false, { message: '가입되지 않은 회원입니다.' });
+      }
+    } catch (error) {
+      console.error(error);
+      done(error);
+    }
+  }));
+```
+
+- 실제 전략을 수행하는 async함수 , LocalStrategy 생성자의 두번째 인수로 들어갑니다.
+- 첫번째 인수에서 넣어준 email과 password는 각각 async함수의 첫/두번째 매개변수가 됩니다. 세번째 매개변수인 done함수는 passport.authenticate의 콜백 함수
+- 전략의 내용 : 먼저 사용자 DB에서 일치하는 이메일이 있는지 찾은후 있다면 bcrypt의 compare함수로 비밀번호 비교, 비밀번호까지 일치한다면 done함수의 두번째 인수로 사용자 정보를 넣어 보냅니다. 두번째 인수를 사용하지 않은 경우 로그인에 실패, done함수의 첫번째 인수를 사용하는 경우는 서버쪽에서 에러가 발생했을때고, 세번째 인수를 사용하는 경우는 로그인 처리과정에서 비밀번호가 일치하지 않거나 존재하지 않은 회원일때와 같은 사용자 정의에러가 발생했을 때
+
+##### 카카오 로그인 구현하기
+
+- 로그인 인증 과정을 카카오에 맡기는 것 > 번거롭게 회원가입하지 않아도 되므로 편리
+- 해야할 작업 : 처음 로그인할때 회원가입 처리 > 두번째 로그인부터는 로그인 처리 > 다소 복잡
+- [kakaoStrategy.js]()
+
+```js
+passport.use(new KakaoStrategy({
+    clientID: process.env.KAKAO_ID,
+    callbackURL: '/auth/kakao/callback',
+  }
+```
+
+- 로컬 로그인과 마찬가지로 카카오 로그인에 대한 설정 > clientID는 카카오에서 발급해주는 아이디 > 노출 X > process.env.KAKAO_ID로 설정 > 나중에 아이디를 발급받아 .env파일에 넣을 예정
+- callbackURL은 카카오로부터 인증결과를 받을 라우터 주소
+
+```js
+async (accessToken, refreshToken, profile, done) => {
+    console.log('kakao profile', profile);
+    try {
+      const exUser = await User.findOne({
+        where: { snsId: profile.id, provider: 'kakao' },
+      });
+      if (exUser) {
+        done(null, exUser);
+      }
+```
+
+- 먼저 기존에 카카오를 통해 회원가입한 사용자가 있는지 조회, 만약 있다면 이미 회원가입 되어 있는 경우 사용자 정보와함께 done함수를 호출하고 전략을 종료
+
+```js
+ else {
+        const newUser = await User.create({
+          email: profile._json && profile._json.kaccount_email,
+          nick: profile.displayName,
+          snsId: profile.id,
+          provider: 'kakao',
+        });
+        done(null, newUser);
+      }
+    } catch (error) {
+      console.error(error);
+      done(error);
+    }
+  }));
+};
+```
+
+- 카카오를 통해 회원가입한 사용자가 없다면 회원가입을 진행 > 카카오에서는 인증후 callbackURL에 적힌 주소로 accessToken, refreshToken과 profile을 보냅니다. profile에는 사용자 정보들이 들어있습니다. 카카오에서 보내주는 것이므로 데이터는 console.log 메서드로 확인해보는 것이 좋습니다. profile 객체에서 원하는 정보를 꺼내와 회원가입을 하면됩니다. 사용자 생성한 뒤 done함수 호출
+
+- **routes/auth.js**
+- 카카오 로그인 라우터를 로그아웃 라우터 아래에 추가하여 회원가입을 따로 코딩할필요가 없고 카카오 로그인 전략이 대부분의 로직을 처리하므로 라우터가 상대적으로 간단
+- `GET/auth/kakao`로 접근하면 카카오 로그인 과정이 시작 > layout.html의 카카오톡 버튼에 /auth/kakao 링크가 붙어 있습니다. , `GET/auth/kakao`에서 로그인 전략을 수행하는데 처음에는 카카오 로그인 창으로 리다이렉트합니다. 그 창에서 로그인후 성공 여부 결과를 GET/auth/kakao/callback으로 받습니다.
+- 로컬로그인과 다른점은 passport.authenticate 메서드에 콜백함수를 제공하지 않는다는 점입니다. 카카오 로그인은 로그인 성공시 내부적으로 `req.login`을 호출하므로 우리가 직접 호출할 필요가 없습니다.
+- 콜백함수대신 로그인 실패시 어디로 이동할지 `failureRedirect` 속성에 적고 성공시 어디로 이동할지를 다음 미들웨어 적습니다.
+- 추가한 auth 라우터를 app.js에 연결
+
+```js
+const authRouter = require("./routes/auth");
+app.use("/auth", authRouter);
+```
+
+- 아직 끝난 것이 아닌 kakaoStrategy.js에서 사용하는 clientID를 발급받아야합니다. 카카오 로그인을 위해서는 카카오 개발자 계정과 로그인용 애플리케이션 등록이 필요합니다.
+- [kakao개발자](https://developers.kakao.com)
+- `REST API 키를 복사하여 .env`에 넣습니다.
+- 1. 앱설정 > 플랫폼 > Web플랫폼 등록 > 사이트 도메인 입력
+- 2. 제품설정 > 카카오 로그인 > 활성화 설정 > ON
+- 3. Redirect URI를 수정 kakaoStrategy.js의 callbackURL과 ㅇ일치
+- 4. 제품설정 > 카카오 로그인 > 동의항목 > 이메일을 무조건 필요로하므로 카카오 계정으로 정보 수집후 제공 체크
+
+#### 카카오로그인 외
+
+- 구글(passport-google-aoauth2)
+- 페이스북(passport-facebook)
+- 네이버(passport-naver)
+- 트위터(passport-twitter)
