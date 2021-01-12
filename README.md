@@ -4009,7 +4009,7 @@ mongoose.connection.on("disconnected", () => {
 
 - MySQL과 시퀄라이즈로 데이터베이스 설정
 - 로그인 > 사용자 테이블 , 게시글 저장 > 게시글 테이블, 해시태그 > 해시태그 테이블
-- `models` 폴더 안에 [user.js](), [post.js](), [hashtag.js]() 생성
+- `models` 폴더 안에 [user.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/models/user.js), [post.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/models/post.js), [hashtag.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/models/hashtag.js) 생성
 
 1. `user.js`
 
@@ -4025,7 +4025,7 @@ mongoose.connection.on("disconnected", () => {
 3. `hashtag.js`
 
 - 해시태그 모델은 태그 이름을 저장, 해시태그 모델을 따로 두는 것은 나중에 태그로 검색하기 위해
-- 이제 생성한 모델들을 시퀄라이즈에 등록합니다. [models/index.js]()에는 시퀄라이즈가 자동으로 생성한 코드들이 들어 있을 것입니다. 그것을 링크와 같이 변경
+- 이제 생성한 모델들을 시퀄라이즈에 등록합니다. [models/index.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/models/index.js)에는 시퀄라이즈가 자동으로 생성한 코드들이 들어 있을 것입니다. 그것을 링크와 같이 변경
 
 - **User 모델과 Post 모델은 1:N 관계에 있으므로 hasMany로 연결**
 - **같은 테이블 간 N:M관계 존재** > 팔로잉 기능 > 사용자 한명이 팔로워 여러명 가질수도 있고, 한 사람이 여러명을 팔로잉 가능 > through 옵션을 사용해 생성할 모델 이름을 Follow로 설정
@@ -4037,5 +4037,5 @@ mongoose.connection.on("disconnected", () => {
   <br>
   <img src="https://user-images.githubusercontent.com/41010744/104269107-d51c4180-54d8-11eb-9c60-e8fa0b0b3547.png">
   <br>
-- 시퀄라이즈는 [config.json]()을 바탕으로 자동으로 데이터베이스 생성 > `npx sequelize db:create` > 생성한 디비 바탕으로 모델을 서버와 연결 > app.js
+- 시퀄라이즈는 [config.json](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/config/config.json)을 바탕으로 자동으로 데이터베이스 생성 > `npx sequelize db:create` > 생성한 디비 바탕으로 모델을 서버와 연결 > app.js
 - `npm start` > 시퀄라이즈는 테이블 생성 쿼리문에 `if not exists`를 넣어주기 때문에 테이블이 없을 때 테이블 자동 생성
