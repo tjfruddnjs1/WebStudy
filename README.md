@@ -4476,19 +4476,19 @@ router.get("/hashtag", async (req, res, next) => {
 
 2. **프로필 정보 변경하기** > `시퀄라이즈의 update메서드와 라우터 활용`
 
-- [layout.html]() : 로그아웃 밑에 프로필 수정 버튼을 추가한후 해당 버튼에 click 이벤트 리스너를 추가
+- [layout.html](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/views/layout.html) : 로그아웃 밑에 프로필 수정 버튼을 추가한후 해당 버튼에 click 이벤트 리스너를 추가
 - 버튼이 클릭되었을 경우 prompt를 실행시켜 바꿀 닉네임을 입력받습니다.
 - 만약 prompt 입력 값이 있을 경우 /user/:nick 주소로 patch 요청을 보내도록 합니다.
-- [routes/user.js]() : router.patch를 추가 > 해당 라우터로 요청이 올 경우 update 메서드를 활용해서 users DB의 nick을 수정
+- [routes/user.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/routes/user.js) : router.patch를 추가 > 해당 라우터로 요청이 올 경우 update 메서드를 활용해서 users DB의 nick을 수정
 
 <br>
 
 - 닉네임 수정 이전 :
-  <scr img="https://user-images.githubusercontent.com/41010744/104433908-f579f800-55cd-11eb-9ece-26043b6d683c.png">
+  <img src="https://user-images.githubusercontent.com/41010744/104433908-f579f800-55cd-11eb-9ece-26043b6d683c.png">
   <br>
 
 - 닉네임 수정 이후 :
-  <src img="https://user-images.githubusercontent.com/41010744/104433955-0296e700-55ce-11eb-8b0b-a4d1f74f4e95.png">
+  <img src="https://user-images.githubusercontent.com/41010744/104433955-0296e700-55ce-11eb-8b0b-a4d1f74f4e95.png">
   <br>
 
 3. 게시글 좋아요 누르기/좋아요 취소하기 > `사용자-게시글 모델 간 N:M관계 정립후 라우터 활용`
