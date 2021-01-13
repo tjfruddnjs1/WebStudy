@@ -4419,3 +4419,48 @@ router.get("/hashtag", async (req, res, next) => {
    <br>
    <img src="https://user-images.githubusercontent.com/41010744/104287480-d90c8b80-54f9-11eb-8095-b3738416708f.png">
    <br>
+
+##### 핵심 정리
+
+- 서버는 요청에 응답하는 것이 핵심 임무이므로 요청을 수락하든 거절하든 상관없이 반드시 응답해야합니다. 이때 한번만 응답해야 에러가 발생하지 않습니다.
+- 개발시 서버를 매번 수동으로 재시작하지 않으려면 nodemon을 사용
+- dotenv 패키지와 .env파일로 유출되면 안되는 비밀키를 관리
+- 라우터는 routes폴더에, 데이터베이스는 models폴더에, html파일은 views폴더에 구분하여 저장하면 프로젝트 규모가 커져도 관리하기 쉽습니다.
+- 데이터베이스를 구성하기 전에 데이터간 1:1, 1:N, N:M관계를 파악
+- [routes/middleware.js]()처럼 라우터 내에 미들웨어를 사용할수있다는것을 기억
+- Passport의 인증과정을 기억 > 특히 serializeUser와 deserializeUser가 언제호출되는지 파악
+- 프런트엔드 form 태그의 인코딩 방식이 multipart일때 multer 같은 multipart 처리용 패키지를 사용
+
+##### 스스로 해보기
+
+1. **팔로잉 끊기**
+
+- [profile.html]()파일을 수정 > 팔로잉 끊기 버튼 생성 & CSS 스타일 적용
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104417990-990cdd80-55b9-11eb-9dec-1cafde6498ae.png">
+  <br>
+
+- 해당 버튼을 누를때 서버에 요청을 보내는 스크립트 코드 작성
+- 모든 `twit-follow-cancle`에 click 이벤트 리스너 생성 > 버튼이 눌릴 경우 로그인이 되어 있는지 확인 후 > 로그인이 되어 있을 경우 해당 버튼이 가르키는 user의 id를 querySelector를 통해 가져와 userId를 담아 /user/:id/followCancle로 보낸다
+- [routes/user.js]()파일을 수정 > /user/:id/followCancle 요청 주소의 응답
+  <br>
+  <img scr="https://user-images.githubusercontent.com/41010744/104425155-a929ba80-55c3-11eb-94ba-e3c0176964b6.png">
+  <br>
+
+- 먼저 쿼리를 사용해서 주소로 받은 nick과 일치한 nick을 가진 user를 users DB에서 찾아준다.
+- 이후 removeFollower(DB 관계설정을 통해 생긴 메서드)를 통해 FollowDB에서 주소로 받은 nick이 Following 중이고 로그인된 id가 Follower인 데이터를 삭제
+  <br>
+
+- 삭제 이전 DB 상태 :
+  <img src="https://user-images.githubusercontent.com/41010744/104425557-2c4b1080-55c4-11eb-8789-fda8f2a38384.png">
+
+<br>
+
+- 삭제 이후 DB 상태 :
+  <img src="https://user-images.githubusercontent.com/41010744/104425729-5c92af00-55c4-11eb-8a7c-c0cd656d96ab.png">
+  <br>
+
+2. 프로필 정보 변경하기 > `시퀄라이즈의 update메서드와 라우터 활용`
+3. 게시글 좋아요 누르기/좋아요 취소하기 > `사용자-게시글 모델 간 N:M관계 정립후 라우터 활용`
+4. 게시글 삭제하기 > `등록자와 현재 로그인한 사용자가 같을때, 시퀄라이즈의 destory 메서드와 라우터 활용`
+5. 메번 데이터베이스를 조회하지 않도록 deserializeUser 캐싱하기 > `객체 선언후 객체에 사용자 정보 저장, 객체 안에 캐싱된 값이 있으면 조회`

@@ -20,4 +20,16 @@ router.post('/:id/follow', isLoggedIn, async (req, res, next) => {
   }
 });
 
+router.post('/:id/followCancle',isLoggedIn, async(req,res,next)=>{
+    try{
+        console.log(req.user.id, req.params.id);
+        const user = await User.findOne({where:{nick:req.params.id}});
+        await user.removeFollower(parseInt(req.user.id));
+        res.send('success');
+    }catch(error){
+        console.error(error);
+        next(error);
+    }
+})
+
 module.exports = router;

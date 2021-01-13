@@ -6,7 +6,10 @@
       <h2>팔로잉 목록</h2>
       {% if user.Followings %}
         {% for following in user.Followings %}
-          <div>{{following.nick}}</div>
+            <div>
+                <div class="fingNick">{{following.nick}}</div>
+                <button class="twit-follow-cancle">팔로잉끊기</button>
+            </div>
         {% endfor %}
       {% endif %}
     </div>
@@ -19,4 +22,32 @@
       {% endif %}
     </div>
   </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        document.querySelectorAll('.twit-follow-cancle').forEach(function(tag){
+            tag.addEventListener('click',function(){
+                var isLoggedIn = document.querySelector('#my-id');
+                if(isLoggedIn){
+                    var userId = tag.parentNode.querySelector('.fingNick').innerHTML;
+                    var myId = isLoggedIn.value;
+                    if(userId != myId){
+                        if(confirm('팔로우를 끊겠습니까?')){
+                            var xhr = new XMLHttpRequest();
+                            xhr.onload = function(){
+                                if(xhr.status==200){
+                                    location.reload();
+                                }else{
+                                    console.error(xhr.responseText);
+                                }
+                            };
+                            xhr.open('POST','/user/'+userId+'/followCancle');
+                            xhr.send();
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 {% endblock %}
