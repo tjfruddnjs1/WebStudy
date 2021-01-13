@@ -4460,7 +4460,37 @@ router.get("/hashtag", async (req, res, next) => {
   <img src="https://user-images.githubusercontent.com/41010744/104425729-5c92af00-55c4-11eb-8a7c-c0cd656d96ab.png">
   <br>
 
-2. 프로필 정보 변경하기 > `시퀄라이즈의 update메서드와 라우터 활용`
+#### XMLHttpRequest(XHR)
+
+- 서버와 상호작용하기 위해 사용 : 전체 페이지의 새로고침없이도 URL로부터 데이터를 받아올수 있습니다.
+- 웹 페이지가 사용자가 하고 있는 것을 방해하지 않으면서 페이지의 일부를 업데이트 > AJAX 프로그래밍에 이용
+- 이름만 보면 XML만 받아올수있을 것 같아보이지만 모든 종류의 데이터를 받아오는데 사용 가능, HTTP 이외의 프로토콜도 지원
+- 생성자는 XMLHttpRequest를 초기화합니다. 다른 모든 메소드 호출 이전에 호출되어야 합니다.
+- `XMLHttpRequest.onload = callback` : 브라우저가 서버로부터 응답을 받을때 발생하는 이벤트 > 이벤트가 발생하면 함수가 호출된다. 익명함수는 xhr 객체의 status 속성 값을 검사해 서버의 응답이 정상인지 확인
+- `XMLHttpRequest.open('GET','data/test.json',true)` : 세개의 매개변수 (HTTP메서드/요청 처리할 페이지의 URL/요청이 비동기로 처리될것인지 지정하는 불리언 값)을 정의
+- `XMLHttpRequest.send('search=arduino')` : 준비된 요청을 추가 정보와 함께 전달한다. 정보가 없으면 null 키워드를 사용
+
+#### location.reload()
+
+- 새로고침 버튼처럼 현재 리소스를 다시 불러옵니다.
+
+2. **프로필 정보 변경하기** > `시퀄라이즈의 update메서드와 라우터 활용`
+
+- [layout.html]() : 로그아웃 밑에 프로필 수정 버튼을 추가한후 해당 버튼에 click 이벤트 리스너를 추가
+- 버튼이 클릭되었을 경우 prompt를 실행시켜 바꿀 닉네임을 입력받습니다.
+- 만약 prompt 입력 값이 있을 경우 /user/:nick 주소로 patch 요청을 보내도록 합니다.
+- [routes/user.js]() : router.patch를 추가 > 해당 라우터로 요청이 올 경우 update 메서드를 활용해서 users DB의 nick을 수정
+
+<br>
+
+- 닉네임 수정 이전 :
+  <scr img="https://user-images.githubusercontent.com/41010744/104433908-f579f800-55cd-11eb-9ece-26043b6d683c.png">
+  <br>
+
+- 닉네임 수정 이후 :
+  <src img="https://user-images.githubusercontent.com/41010744/104433955-0296e700-55ce-11eb-8b0b-a4d1f74f4e95.png">
+  <br>
+
 3. 게시글 좋아요 누르기/좋아요 취소하기 > `사용자-게시글 모델 간 N:M관계 정립후 라우터 활용`
 4. 게시글 삭제하기 > `등록자와 현재 로그인한 사용자가 같을때, 시퀄라이즈의 destory 메서드와 라우터 활용`
 5. 메번 데이터베이스를 조회하지 않도록 deserializeUser 캐싱하기 > `객체 선언후 객체에 사용자 정보 저장, 객체 안에 캐싱된 값이 있으면 조회`

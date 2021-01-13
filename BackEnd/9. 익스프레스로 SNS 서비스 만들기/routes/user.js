@@ -30,6 +30,17 @@ router.post('/:id/followCancle',isLoggedIn, async(req,res,next)=>{
         console.error(error);
         next(error);
     }
-})
+});
+
+router.patch('/:nick', isLoggedIn, async(req,res,next)=>{
+    try{
+        console.log(req.user.id, req.params.id);
+        const user = await User.update({nick : req.params.nick},{where: {id:req.user.id}});
+        res.send('success');
+    }catch(error){
+        console.error(error);
+        next(error);
+    }
+});
 
 module.exports = router;
