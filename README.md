@@ -4427,7 +4427,7 @@ router.get("/hashtag", async (req, res, next) => {
 - dotenv 패키지와 .env파일로 유출되면 안되는 비밀키를 관리
 - 라우터는 routes폴더에, 데이터베이스는 models폴더에, html파일은 views폴더에 구분하여 저장하면 프로젝트 규모가 커져도 관리하기 쉽습니다.
 - 데이터베이스를 구성하기 전에 데이터간 1:1, 1:N, N:M관계를 파악
-- [routes/middleware.js]()처럼 라우터 내에 미들웨어를 사용할수있다는것을 기억
+- [routes/middleware.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/routes/middlewares.js)처럼 라우터 내에 미들웨어를 사용할수있다는것을 기억
 - Passport의 인증과정을 기억 > 특히 serializeUser와 deserializeUser가 언제호출되는지 파악
 - 프런트엔드 form 태그의 인코딩 방식이 multipart일때 multer 같은 multipart 처리용 패키지를 사용
 
@@ -4435,14 +4435,14 @@ router.get("/hashtag", async (req, res, next) => {
 
 1. **팔로잉 끊기**
 
-- [profile.html]()파일을 수정 > 팔로잉 끊기 버튼 생성 & CSS 스타일 적용
+- [profile.html](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/views/profile.html)파일을 수정 > 팔로잉 끊기 버튼 생성 & CSS 스타일 적용
   <br>
   <img src="https://user-images.githubusercontent.com/41010744/104417990-990cdd80-55b9-11eb-9dec-1cafde6498ae.png">
   <br>
 
 - 해당 버튼을 누를때 서버에 요청을 보내는 스크립트 코드 작성
 - 모든 `twit-follow-cancle`에 click 이벤트 리스너 생성 > 버튼이 눌릴 경우 로그인이 되어 있는지 확인 후 > 로그인이 되어 있을 경우 해당 버튼이 가르키는 user의 id를 querySelector를 통해 가져와 userId를 담아 /user/:id/followCancle로 보낸다
-- [routes/user.js]()파일을 수정 > /user/:id/followCancle 요청 주소의 응답
+- [routes/user.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/9.%20%EC%9D%B5%EC%8A%A4%ED%94%84%EB%A0%88%EC%8A%A4%EB%A1%9C%20SNS%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0/routes/user.js)파일을 수정 > /user/:id/followCancle 요청 주소의 응답
   <br>
   <img scr="https://user-images.githubusercontent.com/41010744/104425155-a929ba80-55c3-11eb-94ba-e3c0176964b6.png">
   <br>
