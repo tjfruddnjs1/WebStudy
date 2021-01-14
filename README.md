@@ -4520,30 +4520,30 @@ router.get("/hashtag", async (req, res, next) => {
 <br>
 
 - 우리는 다른 서비스에 NodeBird 서비스의 게시글, 해시태그, 사용자 정보를 JSON 형식으로 제공할 예정, 단 인증을 받은 사용자에게만 일정한 할당량 안에서 API를 호출할수 있도록 허용
-- 우선 `nodebird-api` 폴더를 만들고 package.json 파일을 생성 > 새로 추가된 패키지는 `uuid` > 고유한 랜덤 문자열을 만들어내는데 사용 [package.json]()
+- 우선 `nodebird-api` 폴더를 만들고 package.json 파일을 생성 > 새로 추가된 패키지는 `uuid` > 고유한 랜덤 문자열을 만들어내는데 사용 [package.json](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/package.json)
 - NodeBird에서 `config,models,passport` 폴더와 내용물들을 모두 복사해서 nodebird-api 폴더에 붙여넣기
 - routes폴더에서는 `auth.js와 middlewares.js`만 그대로 사용 & `.env파일` 복사 > 다른 폴더와 파일은 새로 나올때마다 직접 생성
-- 에러를 표시할 파일 > [views/error.html]()
-- [app.js]() : 포트 번호를 8002로 하고 9장의 NodeBird 앱 서버(8001 포트) 및 추후에 만들 클라이언트인 NodeDog 서버(포트 번호 4000)와 같이 실행 > 콘솔을 하나 더 열어 서버를 실행
-- [models/domain.js]() : 도메인(인터넷 주소)을 등록하는 기능이 새로 생겼으므로 도메인 모델을 추가
+- 에러를 표시할 파일 > [views/error.html](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/views/error.html)
+- [app.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/app.js) : 포트 번호를 8002로 하고 9장의 NodeBird 앱 서버(8001 포트) 및 추후에 만들 클라이언트인 NodeDog 서버(포트 번호 4000)와 같이 실행 > 콘솔을 하나 더 열어 서버를 실행
+- [models/domain.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/models/domain.js) : 도메인(인터넷 주소)을 등록하는 기능이 새로 생겼으므로 도메인 모델을 추가
 
 1. 도메인 모델에는 인터넷 주소(host), 도메인 종류(type), 클라이언트 비밀 키(clientSecret) 존재
 2. `type 컬럼을 보면 ENUM` 속성 > 넣을 수 있는 값을 제한하는 데이터 형식 > 무료(free),프리미엄(premium) 중 하나 선택 > 어겼을시 에러 발생
 3. `클라이언트 비밀 키` > 다른 개발자들이 NodeBird의 API를 사용할 때 필요한 비밀키 > 유출시 다른 사람을 사칭해서 요청을 보낼수있으므로 유출되지 않도록 주의 > 한 가지 안전 장치로서, 요청을 보낸 도메인까지 일치해야 요청을 보낼 수 있게 제한을 둘것입니다.
 4. `clientSecret` 컬럼은 UUID 타입을 가짐 > 충돌 가능성이 매우 적은 랜덤한 문자열
-5. 이제 새로 생성한 도메인 모델을 시퀄라이즈와 연결 > 사용자 모델과 일대다 관계를 가지는데, 사용자 한명이 여러 도메인을 소유할 수 있기 때문 [models/index.js](), [models/user.js]()
+5. 이제 새로 생성한 도메인 모델을 시퀄라이즈와 연결 > 사용자 모델과 일대다 관계를 가지는데, 사용자 한명이 여러 도메인을 소유할 수 있기 때문 [models/index.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/models/index.js), [models/user.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/models/user.js)
 
-- [views/login.html]() : 로그인 화면 > 카카오 로그인은 제외 > 카카오 로그인을 추가하려면 카카오 개발자 사이트에서 http://localhost:8002 도메인을 추가로 등록
-- [routes/index.js]() : 도메인을 등록하는 화면 > 로그인하지 않았다면 로그인 창이 먼저 뜨고, 로그인한 사용자에게는 도메인등록화면 보여줌
+- [views/login.html](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/views/login.html) : 로그인 화면 > 카카오 로그인은 제외 > 카카오 로그인을 추가하려면 카카오 개발자 사이트에서 http://localhost:8002 도메인을 추가로 등록
+- [routes/index.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/routes/index.js) : 도메인을 등록하는 화면 > 로그인하지 않았다면 로그인 창이 먼저 뜨고, 로그인한 사용자에게는 도메인등록화면 보여줌
 
 1. `GET/ 라우터` : 접속시 로그인 화면을 보여주며, 도메인 등록 라우터는 폼으로부터 온 데이터를 도메인 모델에 저장
 
 - 도메인 등록 라우터에서는 clientSecret의 값을 uuid 패키지를 통해 생성 > uuid 중에서도 4버전을 사용 > 36자리 문자열 형식으로 생겼는데 3번째 마디의 첫번째 숫자가 버전을 알려줍니다.
 - `const {v4 : uuidv4}` : 특이한 부분인데 패키지의 변수나 함수를 불러올 때 이름을 바꿀수 있습니다 v4에서 uuidv4로 바꾸었습니다.
 - 이제 서버를 실행하고 http://localhost:8002로 접속 > 이제 부터 NodeBird API가 아니라 API서비스를 이용하는 사용자의 입장으로 접속 > API를 사용하기 위해서는 허가를 받아야하는데 카카오 로그인을 하기 위해 카카오 개발자 사이트에 애플리케이션을 만들었던것과 비슷한 상황
-  <br>
 
 - http://localhost:8002 접속화면
+  <br>
   <img src="https://user-images.githubusercontent.com/41010744/104577956-6e945080-569d-11eb-9f85-a2260b76948b.png">
   <br>
 
