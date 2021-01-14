@@ -4581,13 +4581,13 @@ router.get("/hashtag", async (req, res, next) => {
 - `JWT 토큰은 JWT 비밀 키를 알지 않는 이상 변조가 불가능` > 변조한 토큰은 시그니처를 비밀 키를 통해 검사할때 들통 > 믿고 사용 가능 (이름,권한 등) > 비밀번호를 제외하고 사용자의 이메일이나 사용자의 권한 같은 것들을 넣어두면 DB 조회없이도 사용자를 믿고 권한 부여 가능
 - 단점은 용량이 크다는 것인데 내용물이 들어 있으므로 랜덤한 토큰을 사용할때와 비교해서 용량이 클수밖에 없습니다. > 매 요청시 토큰이 오고 가서 데이터 양이 증가 > 장/단점이 뚜렸하므로 상황을 잘 따져 사용
 - `판단 기준` : 가격 > 랜덤 스트링을 사용해서 매번 사용자 정보를 조회하는 작업의 비용이 더 큰지, 내용물이 들어 있는 JWT 토큰을 사용해서 발생하는 데이터 비용이 더 큰지 비교
-- `npm i jsonwebtoken` : JWT 모듈을 설치 > 다른 사용자가 API를 쓰려면 JWT 토큰을 발급받고 인증 > 이는 대부분의 `라우터에 공통적으로 해당하는 부분이므로 미들웨어`로 만들어 두는게 좋습니다. > [middlewares.js]()
+- `npm i jsonwebtoken` : JWT 모듈을 설치 > 다른 사용자가 API를 쓰려면 JWT 토큰을 발급받고 인증 > 이는 대부분의 `라우터에 공통적으로 해당하는 부분이므로 미들웨어`로 만들어 두는게 좋습니다. > [middlewares.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/routes/middlewares.js)
 - 요청 헤더에 저장된 토큰(`req.headers.authorization`)을 사용합니다. 사용자가 쿠키처럼 헤더에 토큰을 넣어 보낼 것입니다. `jwt.verify` 메서드로 토큰을 검증할 수 있습니다.
 - 메서드의 첫번째 인수로는 토큰을, 두번째 인수로는 토큰의 비밀 키를 넣습니다.
 - 토큰의 비밀키가 일치하지 않는다면 인증을 받을 수가 없습니다. 그런 경우에는 에러가 발생하여 catch문으로 이동하게 됩니다 .또한, 올바른 토큰이더라도 유효기간이 지난 경우라면 catch문으로 이동합니다. 유효기간 만료시 419상태 코드를 응답하는데, 코드는 400번 대 숫자중에서 마음대로 정해도됩니다.
 - 인증에 성공한 경우에는 토큰의 내용이 반환되어 `req.decoded`에 저장 > 토큰의 내용은 조금 전에 넣은 `사용자 아이디와 닉네임, 발급자, 유효 기간` 등입니다. `req.decoded`를 통해 `다음 미들웨어에서 토큰의 내용물을 사용 가능`
 
-- [routes/v1.js]() : `토큰을 발급하는 라우터(POST/v1/token)`와 `사용자가 토큰을 테스트해볼수 있는 라우터(GET/v1/test)` > v1은 버전 1이라는 의미
+- [routes/v1.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/routes/v1.js) : `토큰을 발급하는 라우터(POST/v1/token)`와 `사용자가 토큰을 테스트해볼수 있는 라우터(GET/v1/test)` > v1은 버전 1이라는 의미
 - 버전은 1.0.0 처럼 SemVer식으로 정해도 됩니다 > 라우터에 버전을 붙인 이유는, 한번 버전이 정해진 후에는 라우터를 함부로 수정하면 안되기 때문입니다.
 - 다른 사람이나 서비스가 기존 API를 쓰고 있음을 항상 염두 > API 서버의 코드가 바뀌면 API사용 중인 다른 사람에게 영향 > 버전 변경시 라우터를 새로 추가하고 이전 API를 쓰던 사람들에게 새로운 API 나왔음을 알리는것이 좋다
 - 따라서, 기존 사용자에게 영향을 미칠정도로 수정해야 한다면, 버전을 올린 라우터를 새로 추가하고 이전 API를 쓰는 사람들에게 새로운 API가 나왔음을 알리고 어느정도 기간을 두고 미리 공지하여 충분히 넘어갔을때 삭제
@@ -4616,7 +4616,7 @@ const token = jwt.sign(
 - 라우터의 응답을 살펴보면 모두 일정한 형식을 갖추고 있습니다. JSON 형태에 `code, message 속성이 존재하고, 토큰이 있는 경우 token속성도 존재` > 이렇게 일정한 형식을 갖춰야 응답받는 쪽에서 처리하기가 좋습니다. code는 HTTP 상태 코드를 사용해도 되고, 임의로 숫자를 부여해도 됩니다.
 - 일관성 있게 작성해야 사용자들이 code만봐도 어떤 문제인지 알수있습니다. 이해하지 못할경우 message도 같이 전송
 - code가 200번대 숫자가 아니면 에러이고, 에러의 내용은 message에 담아 보내는 것으로 현재 API 서버의 규칙을 정했습니다.
-- 방금 만든 라우터를 서버에 연결 > [app.js]()
+- 방금 만든 라우터를 서버에 연결 > [app.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/app.js)
 
 ##### JWT 토큰으로 로그인하려면 ?
 
@@ -4651,9 +4651,9 @@ router.post('/login', isNotLoggedIn, (req,res,next)=>{
 - ex. 쇼핑몰들이 있으면 쇼핑몰들의 최저가를 알려주는 서비스가 2차 서비스
 - 현재 프로젝트의 2차 서비스 이름은 NodeCat
 - nodebird-api 폴더와 같은 위치에 `nodecat`이라는 새로운 폴더를 만듭니다 > 별도의 서버이므로 nodebird-api와 코드가 섞이지 않게 주의
-- [package.json]() : 주 목적은 nodebird-api의 API를 통해 데이터를 가져오는 것 > 가져온 데이터는 JSON 형태이므로 퍼그/넌적스 같은 템플릿 엔진으로 데이터를 렌더링 > 서버 파일과 에러를 표시할 파일을 생성 > [app.js]() : 사용하지 않는 미들웨어는 걷어내고 최소한의 app.js를 구성,[views/error.html]()
+- [package.json](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodecat/package.json) : 주 목적은 nodebird-api의 API를 통해 데이터를 가져오는 것 > 가져온 데이터는 JSON 형태이므로 퍼그/넌적스 같은 템플릿 엔진으로 데이터를 렌더링 > 서버 파일과 에러를 표시할 파일을 생성 > [app.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodecat/app.js) : 사용하지 않는 미들웨어는 걷어내고 최소한의 app.js를 구성,[views/error.html](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodecat/views/error.html)
 - API를 사용하려면 먼저 사용자 인증을 받아야 하므로 사용자 인증이 원활하게 진행되는지 테스트하는 라우터를 생성 > 조금 전에 발급받은 clientSecret을 .env에 넣습니다.
-- [routes/index.js]()
+- [routes/index.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodecat/routes/index.js)
 - GET/test 라우터는 NodeCat 서비스가 토큰 인증 과정을 테스트해보는 라우터
 
 1. 요청이 왔을 때 세션에 발급받은 토큰이 저장되어 있지 않다면, POST http://localhost:8002/v1/token 라우터로부터 토큰을 발급받습니다 > 이때 HTTP 요청의 본문에 클라이언트 비밀키를 실어 보냅니다.
@@ -4662,7 +4662,7 @@ router.post('/login', isNotLoggedIn, (req,res,next)=>{
 - 실제로 GET/test 라우터를 사용해보자 > 콘솔을 하나 더 띄워 서버(localhost:4000)를 실행 > nodebird-api(localhost:8002)도 실행중이어야 한다.
 - 정보를 가져오는 모습 > `결과`
   <br>
-  <img scr="https://user-images.githubusercontent.com/41010744/104626114-d9af4880-56d8-11eb-831c-7b30b23a4207.png">
+  <img scr="https://user-images.githubusercontent.com/41010744/104626908-bdf87200-56d9-11eb-9147-f3bd6ccb286d.png">
   <br>
 
 - 잘동작하는 것 같지만 1분후 다시 접속시 토큰이 만료되었다는 메시지 출력
