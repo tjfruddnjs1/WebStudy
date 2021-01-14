@@ -4662,7 +4662,7 @@ router.post('/login', isNotLoggedIn, (req,res,next)=>{
 - 실제로 GET/test 라우터를 사용해보자 > 콘솔을 하나 더 띄워 서버(localhost:4000)를 실행 > nodebird-api(localhost:8002)도 실행중이어야 한다.
 - 정보를 가져오는 모습 > `결과`
   <br>
-  <img scr="https://user-images.githubusercontent.com/41010744/104626908-bdf87200-56d9-11eb-9147-f3bd6ccb286d.png">
+  <img src="https://user-images.githubusercontent.com/41010744/104626908-bdf87200-56d9-11eb-9147-f3bd6ccb286d.png">
   <br>
 
 - 잘동작하는 것 같지만 1분후 다시 접속시 토큰이 만료되었다는 메시지 출력
