@@ -4667,3 +4667,87 @@ router.post('/login', isNotLoggedIn, (req,res,next)=>{
 
 - 잘동작하는 것 같지만 1분후 다시 접속시 토큰이 만료되었다는 메시지 출력
 - 토큰 갱신 필요 > `토큰이 만료되었을때 갱신해야하는 코드 추가` > 다음절
+
+#### 10.5 SNS API 서버 만들기
+
+- 다시 API 제공자(nodebird-api)입장에서 나머자 API 라우터를 완성
+- [nodebird-api/routes/v1.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/routes/v1.js)
+- `GET/posts/my` 라우터와 `GET/posts/hashtag/:title` 라우터 추가 : 내가 올린 포스트와 해시태그 검색 결과를 가져오는 라우터 > 이렇게 사용자에게 제공해도 되는 정보를 API로 만들면 된다.
+- 사용하는 측(NodeCat)에서는 위의 API를 이용하는 코드를 추가 > `토큰을 발급받는 부분이 반복`되므로 이를 함수로 만들어 재사용해도 좋다
+- [nodecat/routes/index.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodecat/routes/index.js)
+
+```js
+const request = async (req, api) => {
+  try {
+    if (!req.session.jwt) {
+      // 세션에 토큰이 없으면
+      const tokenResult = await axios.post(`${URL}/token`, {
+        clientSecret: process.env.CLIENT_SECRET,
+      });
+      req.session.jwt = tokenResult.data.token; // 세션에 토큰 저장
+    }
+    return await axios.get(`${URL}${api}`, {
+      headers: { authorization: req.session.jwt },
+    }); // API 요청
+  } catch (error) {
+    if (error.response.status === 419) {
+      // 토큰 만료시 토큰 재발급 받기
+      delete req.session.jwt;
+      return request(req, api);
+    } // 419 외의 다른 에러면
+    return error.response;
+  }
+};
+```
+
+- request함수는 NodeBird API에 요청을 보내는 함수입니다. 자주 재사용되므로 함수로 분리 > 먼저 요청의 헤더 orgin 값을 localhost:4000으로 설정한후 어디서 요청을 보내는지 파악하기 위해 사용하며 나중에 주소가 바뀌면 이 값도 따라서 바꾸면 됩니다.
+- 세션에 토큰이 없으면 clientSecret을 사용해 토큰을 발급받는 요청을 보내고, 발급 받은 후에는 토큰을 이용해 API 요청을 보낸다 토큰을 재사용을 위해 세션에 저장, `만약 토큰이 만료`되면 419에러가 발생하는데, `이때는 토큰을 지우고 request함수를 재귀적으로 호출하여 다시 요청`
+- 결과값의 코드에 따라 성공 여부를 알수있고, 실패한 경우에도 실패 종류를 알수있으므로 사용자 입장에서 프로그래밍에 활용 가능
+
+```js
+router.get("/mypost", async (req, res, next) => {
+  try {
+    const result = await request(req, "/posts/my");
+    res.json(result.data);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+```
+
+- GET/mypost 라우터는 API를 사용해 자신이 작성한 포스트를 JSON 형식으로 가져오는 라우터입니다. 현재는 JSON으로만 응답하지만 템플릿 엔진을 사용해 화면에 렌더링할수있습니다.
+
+```js
+router.get("/search/:hashtag", async (req, res, next) => {
+  try {
+    const result = await request(
+      req,
+      `/posts/hashtag/${encodeURIComponent(req.params.hashtag)}`
+    );
+    res.json(result.data);
+  } catch (error) {
+    if (error.code) {
+      console.error(error);
+      next(error);
+    }
+  }
+});
+```
+
+- GET/search/:hashtag 라우터는 API를 사용해 해시태그를 검색하는 라우터
+- localhost:4000/myhost > 해당 user 게시글 목록을 불러오는 모습
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104629933-7ecc2000-56dd-11eb-864e-4be28c1465b3.png">
+  <br>
+- localhost:4000/search/node > node라는 해시태그를 가진 게시글을 검색한 결과
+  <br>
+  <img scr="https://user-images.githubusercontent.com/41010744/104630273-eedaa600-56dd-11eb-8796-f6976ab30df1.png">
+  <br>
+
+- 만약 1분뒤 요청이 만료되고 나서 다시 요청을 보내면 알아서 토큰을 재발급한후 다시 요청을 보냅니다. 이경우 nodebird-api 콘솔에는 다음과 같은 3개의 요청이 기록됩니다.
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104630734-8213db80-56de-11eb-92e5-81ed59093d54.png">
+  <br>
+
+- 먼저 요청을 보낼 때 토큰이 만료되었으므로 419에러 발생후 그때, request 함수의 catch문에 의해 다시 request 함수가 실행되고 토큰을 새로 가져온뒤 요청을 다시 보냅니다. 이과정은 NodeCat 콘솔에서는 POST/search/node 하나의 요청으로만 기록됩니다.
