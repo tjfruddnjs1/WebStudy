@@ -12,7 +12,7 @@ module.exports = class Domain extends Sequelize.Model {
         allowNull: false,
       },
       clientSecret: {
-        type: Sequelize.UUID,
+        type: Sequelize.STRING(36),
         allowNull: false,
       },
     }, {
