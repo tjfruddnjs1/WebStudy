@@ -4896,7 +4896,7 @@ router.use(async (req, res, next) => {
 
 - 테스트에 사용할 패키지 : `jest` > 페이스북에서 만든 오픈소스로, 테스팅에 필요한 툴들을 대부분 갖추고 있어 편리
 - 9장의 NodeBird 프로젝트를 그대로 사용하고 여기에 jest 패키지 설치 > 테스팅 툴은 개발시에만 사용하므로 `-D` 옵션 사용
-- package.json에는 test라는 명령어를 등록 > 명령어를 실행할때 jest 실행 > [package.json]()
+- package.json에는 test라는 명령어를 등록 > 명령어를 실행할때 jest 실행 > [package.json](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/11%EC%9E%A5.%20%EB%85%B8%EB%93%9C%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%ED%85%8C%EC%8A%A4%ED%8A%B8%ED%95%98%EA%B8%B0/package.json)
 - routes폴더 안에 middlewares.test.js 생성 > 테스트용 파일은 파일명과 확장자 사이에 `test나 spec`을 넣으면 됩니다.
 - `npm test`로 테스트 코드 실행 > 파일 명에 test나 spec이 들어간 파일들을 모두찾아 실행
 
@@ -4917,7 +4917,7 @@ test("1+1은 2입니다.", () => {
 
 #### 11-2. 유닛 테스트
 
-- 실제 NodeBird 코드를 테스트 > `middleware.js`에 있는 `isLoggedIn과 isNotLoggedIn 함수`를 테스트 > [middlewares.test.js]()
+- 실제 NodeBird 코드를 테스트 > `middleware.js`에 있는 `isLoggedIn과 isNotLoggedIn 함수`를 테스트 > [middlewares.test.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/11%EC%9E%A5.%20%EB%85%B8%EB%93%9C%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%ED%85%8C%EC%8A%A4%ED%8A%B8%ED%95%98%EA%B8%B0/routes/middlewares.test.js)
 
 ```js
 const { isLoggedIn, isNotLoggedIn } = require("./middlewares");
@@ -4937,7 +4937,7 @@ describe("isNotLoggedIn", () => {
 
 - isLoggedIn 함수와 isNotLoggedIn 함수를 불러와 4개의 테스트를 작성 > 아직 내용은 X
 - describe 함수는 테스트를 그룹화 해주는 역할 > test 함수와 마찬가지로 첫번째 인수는 그룹에 대한 설명, 두번째 인수인 함수는 그룹에 대한 내용
-- [routes/middleware.js]의 실제 코드에서는 익스프레스가 req,res 객체와 next함수를 인수로 넣었기에 사용할 수 있었지만 테스트 환경에서는 어떻게 넣어야 할까?
+- [routes/middleware.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/11%EC%9E%A5.%20%EB%85%B8%EB%93%9C%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%ED%85%8C%EC%8A%A4%ED%8A%B8%ED%95%98%EA%B8%B0/routes/middlewares.js)의 실제 코드에서는 익스프레스가 req,res 객체와 next함수를 인수로 넣었기에 사용할 수 있었지만 테스트 환경에서는 어떻게 넣어야 할까?
 - req 객체에는 isAuthenticated 메서드가 존재하고 res 객체에도 status, send, redirect 메서드가 존재하는데 코드가 성공적으로 실행되게 하려면 이것들을 모두 구현해야 합니다.
 - 가짜 객체와 함수를 만들어 넣는다 > 테스트의 역할은 코드나 함수가 제대로 실행되는지 검사하고 값이 일치하는지를 검사하는 것이므로, 테스트 코드의 객체가 실제 익스프레스 객체가 아니어도 됩니다. 이렇게 가짜 객체, 가짜 함수를 넣는 행위 > `모킹(mocking)`
 
@@ -5003,10 +5003,10 @@ describe("isNotLoggedIn", () => {
 ```
 
 - `유닛 테스트` : 작은 단위의 함수나 모듈이 의도된 대로 정확히 작동하는지 테스트 > 나중에 함수를 수정하면 기존에 작성해둔 테스트는 실패 > 테스트 코드도 기존 코드가 변경된 것에 맞춰 수정
-- 라우터와 긴밀하게 연결되어 있는 미들웨어도 테스트 > 단 이때는 유닛테스트를 위해 미들웨어를 분리 > [routes/user.js]()
-- POST/:id/follow 라우터의 async 함수 부분은 따로 분리 가능 > controllers폴더를 만들고 그안에 user.js 생성 > [controllers/user.js]() > `라우터에서 응답을 보내는 미들웨어를 특별히 컨트롤러`라고 부릅니다.
-- 컨트롤러를 분리했으므로 [routes/user.js]()도 따라 수정
-- addFollwing 컨트롤러를 테스트 > [controllers/user.test.js]()를 작성
+- 라우터와 긴밀하게 연결되어 있는 미들웨어도 테스트 > 단 이때는 유닛테스트를 위해 미들웨어를 분리 > [routes/user.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/11%EC%9E%A5.%20%EB%85%B8%EB%93%9C%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%ED%85%8C%EC%8A%A4%ED%8A%B8%ED%95%98%EA%B8%B0/routes/user.js)
+- POST/:id/follow 라우터의 async 함수 부분은 따로 분리 가능 > controllers폴더를 만들고 그안에 user.js 생성 > [controllers/user.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/11%EC%9E%A5.%20%EB%85%B8%EB%93%9C%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%ED%85%8C%EC%8A%A4%ED%8A%B8%ED%95%98%EA%B8%B0/controllers/user.js) > `라우터에서 응답을 보내는 미들웨어를 특별히 컨트롤러`라고 부릅니다.
+- 컨트롤러를 분리했으므로 [routes/user.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/11%EC%9E%A5.%20%EB%85%B8%EB%93%9C%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%ED%85%8C%EC%8A%A4%ED%8A%B8%ED%95%98%EA%B8%B0/routes/user.js)도 따라 수정
+- addFollwing 컨트롤러를 테스트 > [controllers/user.test.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/11%EC%9E%A5.%20%EB%85%B8%EB%93%9C%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%ED%85%8C%EC%8A%A4%ED%8A%B8%ED%95%98%EA%B8%B0/controllers/user.test.js)를 작성
 - addFollowing 컨트롤러가 async함수이므로 await을 붙여야 컨트롤러가 실행 완료된 후 expect 함수가 실행 > 하지만 이 테스트는 실패
 
 ```js
