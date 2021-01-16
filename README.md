@@ -4782,79 +4782,85 @@ router.get("/search/:hashtag", async (req, res, next) => {
 - 현재는 nodebird-api 서버가 재시작되면 사용량이 초기화 되므로 실제 서비스에 사용량을 저장할 데이터베이스를 따로 마련하는 것이 좋습니다. 보통 Redis가 많이 사용 > 단 `express-rate-limit`은 DB 연결하는 것을 지원하지 않으므로 npm에서 새로운 패키지를 찾아보거나 직접 구현
 
 #### 10-7. CORS 이해하기
+
 - 이전 절에서 NodeCat이 nodebird-api를 호출하는 것은 서버에서 서버로 API를 호출한 것 > 만약 NodeCat의 프런트에서 nodebird-api의 서버 API를 호출한다면 ?
-- [nodecat/routes/index.js]() : 프런트 화면을 렌더링하는 라우터를 추가 > [nodecat/views/main.html]() > clientSecret의 {{key}} 부분이 넌적스에 의해 실제 키로 치환돼서 렌더링, 단 실제 서비스에서는 서버에서 사용하는 비밀키와 프런트에서 사용하는 비밀키를 따로 두는 게 좋습니다. 보통 서버에서 사용하는 비밀키가 더 강력하기 때문 & 프런트에서 사용하는 비밀키는 모든 사람에게 노출된다는 단점 O > `Db에서 clientSecret 외에 frontSecret` 같은 칼럼을 추가해서 따로 관리하는 것을 권장
+- [nodecat/routes/index.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodecat/routes/index.js) : 프런트 화면을 렌더링하는 라우터를 추가 > [nodecat/views/main.html](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodecat/views/main.html) > clientSecret의 {{key}} 부분이 넌적스에 의해 실제 키로 치환돼서 렌더링, 단 실제 서비스에서는 서버에서 사용하는 비밀키와 프런트에서 사용하는 비밀키를 따로 두는 게 좋습니다. 보통 서버에서 사용하는 비밀키가 더 강력하기 때문 & 프런트에서 사용하는 비밀키는 모든 사람에게 노출된다는 단점 O > `Db에서 clientSecret 외에 frontSecret` 같은 칼럼을 추가해서 따로 관리하는 것을 권장
 - http://localhost:4000 접속시 에러 발생하며 제대로 동작하지 X
-<br>
-<img src="https://user-images.githubusercontent.com/41010744/104804469-bf7a8500-5814-11eb-8554-f1e24ed165df.png">
-<br>
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104804469-bf7a8500-5814-11eb-8554-f1e24ed165df.png">
+  <br>
 
 - `Access-Control-Allow-Origin` 헤더가 없다는 내용의 에러 > 브라우저와 서버의 도메인이 일치하지 않으면 기본적으로 요청이 차단 > 이 현상은 브라우저에서 서버로 요청을 보낼 때만 발생하고 서버에서 서버로 요청을 보낼 때는 발생하지 X > 현재 요청을 보내는 클라이언트 (포트 : 4000)와 요청을 받는 서버(포트: 8002)의 도메인이 다릅니다 > `CORS(Cross-Origin Resource Sharing)` 문제라고 부릅니다.
-<br>
-<img src="https://user-images.githubusercontent.com/41010744/104806016-b6d77e00-5817-11eb-98b9-00434dddb9cf.png">
-<br>
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104806016-b6d77e00-5817-11eb-98b9-00434dddb9cf.png">
+  <br>
 
 - Network 탭의 Method가 POST 대신 OPTIONS 로 표시되는데 `OPTIONS` 메서드는 실제 요청을 보내기 전에 서버가 이 도메인을 허용하는지 체크하는 역할
-- CORS문제를 해결하기 위해서는 응답 헤더에 Access-Control-Allow-Origin 헤더를 넣어야 합니다. 이 헤더는 클라이언트 도메인의 요청을 허락하겠다는 뜻을 가지고 있습니다. `res.set` 메서드로 직접 넣어도 되지만, npm에 편하게 설치할 수 있는 패키지가 있습니다 > `cors` 
+- CORS문제를 해결하기 위해서는 응답 헤더에 Access-Control-Allow-Origin 헤더를 넣어야 합니다. 이 헤더는 클라이언트 도메인의 요청을 허락하겠다는 뜻을 가지고 있습니다. `res.set` 메서드로 직접 넣어도 되지만, npm에 편하게 설치할 수 있는 패키지가 있습니다 > `cors`
 - 응답 헤더를 조작하려면 NodeCat이 아니라 NodeBird API 서버에서 바꿔야 합니다 > 응답은 API 서버가 보내는 것이기 때문
-- NodeBird API에 `cors` 모듈 설치후 v2.js에 적용 > [nodebird-api/routes/v2.js]()
+- NodeBird API에 `cors` 모듈 설치후 v2.js에 적용 > [nodebird-api/routes/v2.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/routes/v2.js)
+
 ```js
-router.use(cors({
-    credentials : true,
-}));
+router.use(
+  cors({
+    credentials: true,
+  })
+);
 ```
 
 - router.use로 v2의 모든 라우터에 적용 > 응답에 Access-Control-Allow-Origin 헤더가 추가되어 나갑니다 > credentials : true 옵션을 활성화해야 다른 도메인 간에 쿠키가 공유 > 서버 간의 도메인이 다른 경우에는 이 옵션을 활성화하지 않으면 로그인되지 않을 수 있습니다.
 - 참고로 axios에서도 도메인이 다른데, 쿠키를 공유해야하는 경우 `withCredentials : true` 옵션을 줘서 요청을 보내야합니다.
 - 다시 http://localhost:4000 을 접속해보면 토큰이 발급된 것을 확인 가능 > 이 토큰을 사용해서 다른 API 요청을 보내면 됩니다 > 토큰이 발급되지 않고 429에러가 발생한다면 > 이전 절에서 적용한 사용량 제한 때문이므로 제한이 풀릴 때 다시 시도
-<br>
-<img src="https://user-images.githubusercontent.com/41010744/104806232-606b3f00-5819-11eb-924e-68d55a1df16b.png">
-<br>
-<img src="https://user-images.githubusercontent.com/41010744/104806248-80026780-5819-11eb-855a-0f7df25608ab.png">
-<br>
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104806232-606b3f00-5819-11eb-924e-68d55a1df16b.png">
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104806248-80026780-5819-11eb-855a-0f7df25608ab.png">
+  <br>
 
 - 응답 헤더를 보면 Access-Control-Allow-Origin이 *로 되어 있습니다. `*는 모든 클라이언트의 요청을 허용한다는 의미`
 - condentials : true 옵션 > Access-Control-Allow-Credentials 헤더를 true로
-- 하지만 이로 인해 새로운 문제 발생 > 요청을 보내는 주체가 클라이언트라서 비밀키(process.env.CLIENT_SECERET)이 모두에게 노출 
+- 하지만 이로 인해 새로운 문제 발생 > 요청을 보내는 주체가 클라이언트라서 비밀키(process.env.CLIENT_SECERET)이 모두에게 노출
 - 방금 CORS 요청도 허용했으므로 이 비밀키를 가지고 다른 도메인들이 API 서버에 요청을 보낼 수 있습니다.
 - 이 문제를 막기 위해 처음에 비밀키 발급 시 허용한 도메인을 적게 했습니다. 호스트와 비밀 키가 모두 일치할 때만 CORS를 허용하게 수정하면 됩니다
-- [nodebird-api/routes/v2.js]()
+- [nodebird-api/routes/v2.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/routes/v2.js)
+
 ```js
-const url = require('url');
+const url = require("url");
 //...
 
 router.use(async (req, res, next) => {
-    const domain = await Domain.findOne({
-      where: { host: url.parse(req.get('origin')).host },
-    });
-    if (domain) {
-      cors({
-        origin: req.get('origin'),
-        credentials: true,
-      })(req, res, next);
-    } else {
-      next();
-    }
+  const domain = await Domain.findOne({
+    where: { host: url.parse(req.get("origin")).host },
   });
+  if (domain) {
+    cors({
+      origin: req.get("origin"),
+      credentials: true,
+    })(req, res, next);
+  } else {
+    next();
+  }
+});
 ```
 
 - 먼저 도메인 모델로 `클라이언트의 도메인(req.get('orgin'))`과 호스트가 일치하는 것이 있는지 검사
 - http/https 같은 프로토콜을 떼어낼 때 `url.parse 메서드` 사용 > 일치하는 것이 있다면 CORS를 허용해서 다음 미들웨어로 보내고, 일치하는 것이 없다면 CORS 없이 next를 호출
-- cors 미들웨어에 옵션 > origin 속성에 허용할 도메인만 따로 적으면 됩니다 > *처럼 모든 도메인을 허용하는 대신 기입한 도메인만 허용 > 여러개의 도메인을 허용하고 싶다면 배열 사용
+- cors 미들웨어에 옵션 > origin 속성에 허용할 도메인만 따로 적으면 됩니다 > \*처럼 모든 도메인을 허용하는 대신 기입한 도메인만 허용 > 여러개의 도메인을 허용하고 싶다면 배열 사용
 - 또하나의 특이점 : 9장의 passport.authenticate 미들웨어처럼 cors 미들웨어도 (req,res,next)인수를 직접 줘서 호출 > 이는 미들웨어의 작동 방식을 커스터마이징하고 싶을 때 사용하는 방법이라고 설명했습니다 > 두 코드가 같은 역할을 한다는 것을 기억
-- 다시 http://localhost:4000에 접속하면 성공적으로 토큰을 가져옵니다. 응답의 헤더를 확인해보면 * 대신 http://localhost:4000으로 적용 > 특정 도메인만 허용하므로 허용되지 않은 다른 도메인에서 요청을 보내는 것을 차단
-<br>
-<img src="https://user-images.githubusercontent.com/41010744/104806496-44689d00-581b-11eb-913a-0cf79652b6ab.png">
-<br>
+- 다시 http://localhost:4000에 접속하면 성공적으로 토큰을 가져옵니다. 응답의 헤더를 확인해보면 \* 대신 http://localhost:4000으로 적용 > 특정 도메인만 허용하므로 허용되지 않은 다른 도메인에서 요청을 보내는 것을 차단
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104806496-44689d00-581b-11eb-913a-0cf79652b6ab.png">
+  <br>
 
 - 현재 클라이언트와 서버에서 같은 비밀 키를 써서 문제가 될 수 있는데 따라서 다양한 환경의 비밀키를 발급하는 카카오처럼 환경별로 키를 구분해서 발급하는 것이 바람직
 - 카카오의 경우 REST API 키가 서버용 비밀키고, 자바스크립트 키가 클라이언트용 비밀키 > 여러 키를 발급하는 것을 구현할 필요 O
 
 ##### 프록시 서버
+
 - CORS 문제를 해결하는 또 다른 방법으로 프록시(대리인) 서버를 사용 > 서버에서 서버로 요청을 보낼 때는 CORS 문제가 발생하지 않는 다는 것을 이용한 방법
-<br>
-<img src="https://user-images.githubusercontent.com/41010744/104806557-c48f0280-581b-11eb-8452-e4a40e72a70d.png">
-<br>
+  <br>
+  <img src="https://user-images.githubusercontent.com/41010744/104806557-c48f0280-581b-11eb-8452-e4a40e72a70d.png">
+  <br>
 
 - 위 그림처럼 브라우저와 도메인이 같은 서버를 만든 후, 브라우저에서는 API 서버 대신 프록시 서버에 요청을 보냅니다. 그 후 프록시 서버에서 요청을 받아 다시 API 서버로 요청을 보냅니다 > 서버-서버 간의 요청이므로 CORS 문제가 발생하지 X
 - 프록시 서버는 직접 구현해도 되지만 npm에서 `http-proxy-middleware` 패키지를 사용하면 쉽게 익스프레스와 연동
