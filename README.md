@@ -4757,7 +4757,7 @@ router.get("/search/:hashtag", async (req, res, next) => {
 - 일차적으로 인증된 사용자(토큰을 발급받은 사용자)만 API를 사용할 수 있게 필터를 두긴했지만, 충분하지 않습니다.
 - 인증된 사용자라고 해도 과도하게 API를 사용하면 API 서버에 무리 > 일정 기간내에 API를 사용할 수 있는 힛수를 제한하여 서버의 트래픽 ↓ > 유료 서비스라면 과금 체계별로 횟수에 차이를 둘수도 있습니다.
 - 이러한 기능 또한 npm에 패키지로 만들어져 있습니다. > `express-rate-limit` 패키지 > `nodebird-api`서버에 패키지 설치
-- `npm i express-rate-limit` > [nodebird-api/routes/middlewares.js]() > `apiLimiter, deprecated` 미들웨어 추가
+- `npm i express-rate-limit` > [nodebird-api/routes/middlewares.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/routes/middlewares.js) > `apiLimiter, deprecated` 미들웨어 추가
 - 이제 apiLimiter 미들웨어를 라우터에 넣으면 라우터에 사용량 제한이 걸립니다 > 옵션 : `windowMs(기준시간), max(허용횟수), delayMs(호출 간격), handler(제한 초과시 콜백 함수)`등이 존재
 - 현재 설정은 1분에 한번 호출 가능 > 사용량 제한을 초과 할때는 429상태 코드와 함께 허용량을 초과했다는 응답을 전송
 - deprecated 미들웨어는 사용하면 안되는 라우터에 붙여줄 것입니다 > 410코드와 함께 새로운 버전을 사용하라는 메시지를 응답
@@ -4773,10 +4773,10 @@ router.get("/search/:hashtag", async (req, res, next) => {
 | 500~     | 기타 서버 에러                                      |
 
 - 사용량 제한이 추가되었으므로 기존 API버전과 호환되지 않고 새로운 `v2 라우터`를 만들자
-- [nodebird-api/routes/v2.js]() : 토큰 유효기간을 30분으로 늘렸고, 라우터에 사용량 제한 미들웨어를 추가
-- 기존 v1 라우터를 사용할 때는 경고 메시지를 띄운다 > [nodebird-api/routes/v1.js]() > deprecated > 실제 서비스 운영시에는 v2가 나왔다고 바로 v1을 닫아버리거나 410에러를 응답하기 보다는 일정한 기간을 두고 옮겨가는 것이 좋습니다 > 사용자가 변경된 부분을 자신의 코드에 반영할 시간이 필요 > 노드의 `LTS 방식`도 참고할만한 방식
+- [nodebird-api/routes/v2.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/routes/v2.js) : 토큰 유효기간을 30분으로 늘렸고, 라우터에 사용량 제한 미들웨어를 추가
+- 기존 v1 라우터를 사용할 때는 경고 메시지를 띄운다 > [nodebird-api/routes/v1.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodebird-api/routes/v1.js) > deprecated > 실제 서비스 운영시에는 v2가 나왔다고 바로 v1을 닫아버리거나 410에러를 응답하기 보다는 일정한 기간을 두고 옮겨가는 것이 좋습니다 > 사용자가 변경된 부분을 자신의 코드에 반영할 시간이 필요 > 노드의 `LTS 방식`도 참고할만한 방식
 - 앞으로 이런식으로 v3,v4 라우터를 추가하면서 v1, v2 같은 이전 라우터는 순차적으로 제거
-- 사용자 입장(NodeCat)으로 돌아와 새로 생긴 버전을 호출 > 버전만 v1에서 v2로 교체 > [nodecat/routes/index.js]()
+- 사용자 입장(NodeCat)으로 돌아와 새로 생긴 버전을 호출 > 버전만 v1에서 v2로 교체 > [nodecat/routes/index.js](https://github.com/tjfruddnjs1/WebStudy/blob/main/BackEnd/10.%20%EC%9B%B9%20API%20%EC%84%9C%EB%B2%84%20%EB%A7%8C%EB%93%A4%EA%B8%B0/nodecat/routes/index.js)
 - 만약 v2로 바꾸지 않고 v1을 계속 사용한다면 401에러 발생 > message : 새로운 저전이 나왔습니다. 새로운 버전을 사용하세요.
 - 1분에 한번보다 더 많이 API를 호출하면 429에러 발생 > message : 1분에 한번만 요청할 수 있습니다.
 - 현재는 nodebird-api 서버가 재시작되면 사용량이 초기화 되므로 실제 서비스에 사용량을 저장할 데이터베이스를 따로 마련하는 것이 좋습니다. 보통 Redis가 많이 사용 > 단 `express-rate-limit`은 DB 연결하는 것을 지원하지 않으므로 npm에서 새로운 패키지를 찾아보거나 직접 구현
